@@ -85,6 +85,10 @@ pages = [
 page = st.sidebar.radio("Navigate", pages)
 
 if st.sidebar.button("🔄 Refresh data"):
+    with st.spinner("Running pipeline to fetch latest data..."):
+        import subprocess
+        import sys
+        subprocess.run([sys.executable, "pipeline.py"], check=False)
     st.cache_data.clear()
     st.rerun()
 
