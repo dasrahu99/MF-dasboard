@@ -88,9 +88,22 @@ if st.sidebar.button("🔄 Refresh data"):
     with st.spinner("Running pipeline to fetch latest data..."):
         import subprocess
         import sys
-        subprocess.run([sys.executable, "pipeline.py"], check=False)
-    st.cache_data.clear()
-    st.rerun()
+        import os
+        
+        script_dir = Path(__file__).parent
+        pipeline_path = script_dir / "pipeline.py"
+        
+        try:
+            result = subprocess.run(
+                [sys.executable, str(pipeline_path)],
+                cwd=str(script_dir),
+                capture_output=True, text=True, check=True
+            )
+            # Only clear cache and rerun if successful
+            st.cache_data.clear()
+            st.rerun()
+        except subprocess.CalledProcessError as e:
+            st.error(f"Pipeline failed! Error:\n{e.stderr}\n\nOutput:\n{e.stdout}")
 
 st.sidebar.divider()
 st.sidebar.caption("Pipeline modules active:")
