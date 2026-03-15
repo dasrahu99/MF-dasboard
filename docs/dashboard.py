@@ -96,7 +96,6 @@ if st.sidebar.button("🔄 Refresh data"):
         try:
             result = subprocess.run(
                 [sys.executable, str(pipeline_path)],
-                cwd=str(script_dir),
                 capture_output=True, text=True, check=True
             )
             # Only clear cache and rerun if successful
@@ -121,8 +120,20 @@ if page == "🏠 Overview":
 
     report = load_json(LATEST_JSON)
     if not report:
-        st.warning("Run `python pipeline.py` first to generate data.")
-        st.stop()
+        st.info("Data not found. Running the pipeline automatically for the first time... (This may take 2-3 minutes as it downloads 5-10 years of historical NAV data).")
+        with st.spinner("Fetching data from AMFI..."):
+            import subprocess
+            import sys
+            script_dir = Path(__file__).parent
+            try:
+                subprocess.run(
+                    [sys.executable, str(script_dir / "pipeline.py")],
+                    capture_output=True, text=True, check=True
+                )
+                st.rerun()
+            except subprocess.CalledProcessError as e:
+                st.error(f"Pipeline failed on startup! Error:\n{e.stderr}")
+                st.stop()
 
     funds = [v for v in report.values() if "error" not in v]
 
