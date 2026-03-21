@@ -332,60 +332,124 @@ if "OVERVIEW" in page:
     if not top3:
         st.info("No NEUTRAL funds found — run `python momentum.py` to refresh.")
     else:
-        cols = st.columns(3)
-        for col, m in zip(cols, top3):
+        # Build fully custom HTML cards
+        cards_html = '<div style="display:flex;gap:16px;flex-wrap:wrap;">'
+        for m in top3:
             score  = m.get("composite_score", 0)
-            sig    = m.get("signal","")
             fa     = m.get("factors", {})
             tr     = fa.get("trailing_returns", {})
             accel  = fa.get("acceleration_pct")
             gap    = round(60 - score, 1)
-            prog   = max(0.0, min(1.0, (score - 35) / 25))
+            pct    = max(0, min(100, int((score / 60) * 100)))
 
-            # find full fund data
             code   = m.get("scheme_code","")
             f      = report.get(code, {})
-            name   = f.get("fund_name", m.get("scheme_name",""))[:26]
+            name   = f.get("fund_name", m.get("scheme_name",""))[:28]
             cagr5  = f.get("cagr",{}).get("5y")
             sharpe = f.get("risk",{}).get("sharpe_3y")
 
-            with col:
-                with st.container(border=True):
-                    st.markdown(
-                        f'<div style="font-family:Syne,sans-serif;font-weight:700;'
-                        f'font-size:14px;color:#e8f4f8;margin-bottom:4px;">{name}</div>'
-                        f'<div style="font-family:DM Mono,monospace;font-size:9px;'
-                        f'color:#3d5a72;text-transform:uppercase;letter-spacing:0.08em;">'
-                        f'{f.get("category","")}'
-                        f'{"  ·  5Y: "+str(cagr5)+"%" if cagr5 else ""}</div>',
-                        unsafe_allow_html=True
-                    )
-                    st.markdown('<div style="height:8px"></div>', unsafe_allow_html=True)
+            r1m = tr.get("1m_pct")
+            r3m = tr.get("3m_pct")
+            r1m_s = f"{r1m:+.1f}%" if r1m is not None else "—"
+            r3m_s = f"{r3m:+.1f}%" if r3m is not None else "—"
+            r1m_col = "#00e5ff" if r1m and r1m > 0 else "#ff4060" if r1m and r1m < 0 else "#7a9bb5"
+            r3m_col = "#00e5ff" if r3m and r3m > 0 else "#ff4060" if r3m and r3m < 0 else "#7a9bb5"
 
-                    c1,c2 = st.columns(2)
-                    c1.metric("Score",    f"{score:.0f} / 100")
-                    c2.metric("To BUY",   f"{gap:.1f} pts", delta="need ≥60", delta_color="off")
+            # Accent colour based on proximity
+            arc_col = "#00e5ff" if gap <= 5 else "#ffb300" if gap <= 15 else "#ff4060"
 
-                    st.progress(prog, text=f"{'█'*int(prog*10)}{'░'*(10-int(prog*10))}  {score:.0f}→60")
+            # Acceleration badge
+            accel_html = ""
+            if accel is not None:
+                a_arrow = "▲" if accel > 0 else "▼"
+                a_col   = "#00ff88" if accel > 0 else "#ff4060"
+                accel_html = (
+                    f'<div style="margin-top:10px;padding:5px 10px;border-radius:6px;'
+                    f'background:rgba({",".join(str(int(a_col.lstrip("#")[i:i+2],16)) for i in (0,2,4))},0.12);'
+                    f'font-size:11px;color:{a_col};text-align:center;">'
+                    f'{a_arrow} {abs(accel):.1f}% momentum</div>'
+                )
 
-                    t1,t2 = st.columns(2)
-                    r1m = tr.get("1m_pct")
-                    r3m = tr.get("3m_pct")
-                    t1.metric("1M", f"{r1m:+.1f}%" if r1m is not None else "—")
-                    t2.metric("3M", f"{r3m:+.1f}%" if r3m is not None else "—")
+            # Weakest factors
+            fs = m.get("factor_scores",{})
+            weak_html = ""
+            if fs:
+                weak = sorted(fs.items(), key=lambda x: x[1])[:2]
+                weak_labels = " · ".join(f"{k.replace('_',' ').title()} {v*100:.0f}" for k,v in weak)
+                weak_html = (
+                    f'<div style="margin-top:8px;font-size:9px;color:#3d5a72;'
+                    f'font-family:DM Mono,monospace;letter-spacing:0.05em;">'
+                    f'WEAKEST: {weak_labels}</div>'
+                )
 
-                    if accel is not None:
-                        arrow = "▲" if accel > 0 else "▼"
-                        msg   = f"{arrow} {abs(accel):.1f}% momentum acceleration"
-                        if accel > 0: st.success(msg)
-                        else:         st.warning(msg)
+            # Sharpe line
+            sharpe_html = ""
+            if sharpe and str(sharpe).lower() != "nan":
+                sharpe_html = (
+                    f'<div style="font-size:9px;color:#3d5a72;margin-top:2px;'
+                    f'font-family:DM Mono,monospace;">SHARPE 3Y: {sharpe:.2f}</div>'
+                )
 
-                    fs = m.get("factor_scores",{})
-                    if fs:
-                        weak = sorted(fs.items(), key=lambda x: x[1])[:2]
-                        st.caption("Weakest: " + ", ".join(f"{k}({v*100:.0f})" for k,v in weak))
-                    if sharpe:
-                        st.caption(f"Sharpe 3Y: {sharpe:.2f}")
+            # SVG ring gauge
+            ring_svg = (
+                f'<svg width="80" height="80" viewBox="0 0 80 80">'
+                f'<circle cx="40" cy="40" r="34" fill="none" stroke="#162338" stroke-width="5"/>'
+                f'<circle cx="40" cy="40" r="34" fill="none" stroke="{arc_col}" stroke-width="5" '
+                f'stroke-dasharray="{pct * 2.136} {213.6 - pct * 2.136}" '
+                f'stroke-dashoffset="53.4" stroke-linecap="round"/>'
+                f'<text x="40" y="36" text-anchor="middle" fill="#e8f4f8" '
+                f'font-family="Syne,sans-serif" font-size="18" font-weight="800">{score:.0f}</text>'
+                f'<text x="40" y="50" text-anchor="middle" fill="#3d5a72" '
+                f'font-family="DM Mono,monospace" font-size="8">/ 60 BUY</text>'
+                f'</svg>'
+            )
+
+            cards_html += f'''
+            <div style="flex:1;min-width:240px;background:linear-gradient(145deg,#0a1628,#0d1b2a);
+                        border:1px solid rgba(0,229,255,0.08);border-radius:12px;padding:20px;
+                        position:relative;overflow:hidden;">
+              <div style="position:absolute;top:0;left:0;right:0;height:2px;
+                          background:linear-gradient(90deg,transparent,{arc_col},transparent);"></div>
+              <div style="font-family:Syne,sans-serif;font-weight:700;font-size:15px;
+                          color:#e8f4f8;margin-bottom:2px;">{name}</div>
+              <div style="font-family:DM Mono,monospace;font-size:9px;color:#3d5a72;
+                          text-transform:uppercase;letter-spacing:0.08em;margin-bottom:14px;">
+                {"5Y CAGR: "+str(cagr5)+"%" if cagr5 else "—"}</div>
+              <div style="display:flex;align-items:center;gap:18px;">
+                <div>{ring_svg}</div>
+                <div style="flex:1;">
+                  <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+                    <div style="font-family:DM Mono,monospace;font-size:10px;color:#7a9bb5;">
+                      GAP TO BUY</div>
+                    <div style="font-family:Syne,sans-serif;font-weight:700;font-size:14px;
+                                color:{arc_col};">{gap:.1f} pts</div>
+                  </div>
+                  <div style="width:100%;height:4px;background:#162338;border-radius:2px;
+                              overflow:hidden;margin-bottom:10px;">
+                    <div style="width:{pct}%;height:100%;background:linear-gradient(90deg,{arc_col},
+                                {arc_col}88);border-radius:2px;transition:width 0.5s;"></div>
+                  </div>
+                  <div style="display:flex;gap:16px;">
+                    <div>
+                      <div style="font-size:9px;color:#3d5a72;font-family:DM Mono,monospace;">1M</div>
+                      <div style="font-size:14px;font-weight:700;color:{r1m_col};
+                                  font-family:Syne,sans-serif;">{r1m_s}</div>
+                    </div>
+                    <div>
+                      <div style="font-size:9px;color:#3d5a72;font-family:DM Mono,monospace;">3M</div>
+                      <div style="font-size:14px;font-weight:700;color:{r3m_col};
+                                  font-family:Syne,sans-serif;">{r3m_s}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {accel_html}
+              {weak_html}
+              {sharpe_html}
+            </div>'''
+
+        cards_html += '</div>'
+        st.markdown(cards_html, unsafe_allow_html=True)
 
 
 # ════════════════════════════════════════════════════════════════════
