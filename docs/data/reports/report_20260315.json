@@ -1,0 +1,432 @@
+{
+  "120503": {
+    "scheme_code": "120503",
+    "scheme_name": "",
+    "latest_nav": 99.7111,
+    "as_of_date": "2026-03-13",
+    "cagr": {
+      "1y": 3.71,
+      "3y": 14.15,
+      "5y": 7.83,
+      "10y": 12.89
+    },
+    "risk": {
+      "sharpe_3y": 0.629,
+      "max_drawdown": 33.51,
+      "volatility_3y_ann": 12.24
+    },
+    "sip_simulation": {
+      "total_invested": 600000,
+      "current_value": 701625.11,
+      "units_held": 7036.5798,
+      "avg_cost_per_unit": 85.27,
+      "current_nav": 99.71,
+      "absolute_return_pct": 16.94,
+      "xirr_pct": 6.33,
+      "months_invested": 60
+    },
+    "lump_sum_signal": {
+      "current_nav": 99.7111,
+      "52w_high": 112.4068,
+      "52w_low": 96.1511,
+      "pct_from_52w_high": -11.29,
+      "pct_from_ath": -12.29,
+      "ma50": 108.1283,
+      "ma200": 109.2455,
+      "golden_cross": false,
+      "rsi_14": 20.0,
+      "entry_score": 75.0,
+      "signal": "BUY",
+      "rationale": "Fund is trading at a discount with favourable technical setup."
+    },
+    "data_points": 2765,
+    "fund_name": "Quant Small Cap Fund - Growth"
+  },
+  "118778": {
+    "scheme_code": "118778",
+    "scheme_name": "",
+    "latest_nav": 171.4359,
+    "as_of_date": "2026-03-13",
+    "cagr": {
+      "1y": 7.86,
+      "3y": 19.62,
+      "5y": 21.35,
+      "10y": 21.63
+    },
+    "risk": {
+      "sharpe_3y": 0.842,
+      "max_drawdown": 48.58,
+      "volatility_3y_ann": 15.57
+    },
+    "sip_simulation": {
+      "total_invested": 600000,
+      "current_value": 846690.24,
+      "units_held": 4938.8152,
+      "avg_cost_per_unit": 121.49,
+      "current_nav": 171.44,
+      "absolute_return_pct": 41.12,
+      "xirr_pct": 14.03,
+      "months_invested": 60
+    },
+    "lump_sum_signal": {
+      "current_nav": 171.4359,
+      "52w_high": 196.5313,
+      "52w_low": 158.9539,
+      "pct_from_52w_high": -12.77,
+      "pct_from_ath": -16.13,
+      "ma50": 181.271,
+      "ma200": 187.3521,
+      "golden_cross": false,
+      "rsi_14": 25.9,
+      "entry_score": 75.0,
+      "signal": "BUY",
+      "rationale": "Fund is trading at a discount with favourable technical setup."
+    },
+    "data_points": 2757,
+    "fund_name": "Nippon India Small Cap Fund - Growth"
+  },
+  "118989": {
+    "scheme_code": "118989",
+    "scheme_name": "",
+    "latest_nav": 205.997,
+    "as_of_date": "2026-03-13",
+    "cagr": {
+      "1y": 15.27,
+      "3y": 23.79,
+      "5y": 20.78,
+      "10y": 19.29
+    },
+    "risk": {
+      "sharpe_3y": 1.157,
+      "max_drawdown": 39.51,
+      "volatility_3y_ann": 14.19
+    },
+    "sip_simulation": {
+      "total_invested": 600000,
+      "current_value": 929678.63,
+      "units_held": 4513.0688,
+      "avg_cost_per_unit": 132.95,
+      "current_nav": 206.0,
+      "absolute_return_pct": 54.95,
+      "xirr_pct": 17.91,
+      "months_invested": 60
+    },
+    "lump_sum_signal": {
+      "current_nav": 205.997,
+      "52w_high": 227.177,
+      "52w_low": 178.72,
+      "pct_from_52w_high": -9.32,
+      "pct_from_ath": -9.32,
+      "ma50": 221.7858,
+      "ma200": 217.8758,
+      "golden_cross": true,
+      "rsi_14": 25.0,
+      "entry_score": 60.0,
+      "signal": "HOLD / SIP",
+      "rationale": "Neutral conditions \u2014 continue SIP, avoid large lump sum."
+    },
+    "data_points": 2758,
+    "fund_name": "HDFC Mid-Cap Opportunities Fund - Growth"
+  },
+  "122639": {
+    "scheme_code": "122639",
+    "scheme_name": "",
+    "latest_nav": 88.1632,
+    "as_of_date": "2026-03-13",
+    "cagr": {
+      "1y": 6.16,
+      "3y": 19.31,
+      "5y": 17.14,
+      "10y": 18.41
+    },
+    "risk": {
+      "sharpe_3y": 1.281,
+      "max_drawdown": 31.2,
+      "volatility_3y_ann": 9.44
+    },
+    "sip_simulation": {
+      "total_invested": 600000,
+      "current_value": 836628.6,
+      "units_held": 9489.5444,
+      "avg_cost_per_unit": 63.23,
+      "current_nav": 88.16,
+      "absolute_return_pct": 39.44,
+      "xirr_pct": 13.54,
+      "months_invested": 60
+    },
+    "lump_sum_signal": {
+      "current_nav": 88.1632,
+      "52w_high": 95.7732,
+      "52w_low": 82.0594,
+      "pct_from_52w_high": -7.95,
+      "pct_from_ath": -7.95,
+      "ma50": 93.0602,
+      "ma200": 92.9944,
+      "golden_cross": true,
+      "rsi_14": 22.8,
+      "entry_score": 60.0,
+      "signal": "HOLD / SIP",
+      "rationale": "Neutral conditions \u2014 continue SIP, avoid large lump sum."
+    },
+    "data_points": 2757,
+    "fund_name": "Parag Parikh Flexi Cap Fund - Growth"
+  },
+  "120586": {
+    "scheme_code": "120586",
+    "scheme_name": "",
+    "latest_nav": 113.97,
+    "as_of_date": "2026-03-13",
+    "cagr": {
+      "1y": 6.56,
+      "3y": 16.44,
+      "5y": 14.05,
+      "10y": 15.41
+    },
+    "risk": {
+      "sharpe_3y": 0.849,
+      "max_drawdown": 37.3,
+      "volatility_3y_ann": 11.53
+    },
+    "sip_simulation": {
+      "total_invested": 600000,
+      "current_value": 793041.16,
+      "units_held": 6958.3325,
+      "avg_cost_per_unit": 86.23,
+      "current_nav": 113.97,
+      "absolute_return_pct": 32.17,
+      "xirr_pct": 11.33,
+      "months_invested": 60
+    },
+    "lump_sum_signal": {
+      "current_nav": 113.97,
+      "52w_high": 128.4,
+      "52w_low": 106.92,
+      "pct_from_52w_high": -11.24,
+      "pct_from_ath": -11.24,
+      "ma50": 123.9236,
+      "ma200": 123.0977,
+      "golden_cross": true,
+      "rsi_14": 21.4,
+      "entry_score": 60.0,
+      "signal": "HOLD / SIP",
+      "rationale": "Neutral conditions \u2014 continue SIP, avoid large lump sum."
+    },
+    "data_points": 2758,
+    "fund_name": "Mirae Asset Large Cap Fund - Growth"
+  },
+  "119598": {
+    "scheme_code": "119598",
+    "scheme_name": "",
+    "latest_nav": 96.6557,
+    "as_of_date": "2026-03-13",
+    "cagr": {
+      "1y": 6.11,
+      "3y": 13.26,
+      "5y": 11.11,
+      "10y": 13.34
+    },
+    "risk": {
+      "sharpe_3y": 0.606,
+      "max_drawdown": 37.08,
+      "volatility_3y_ann": 11.16
+    },
+    "sip_simulation": {
+      "total_invested": 600000,
+      "current_value": 745416.99,
+      "units_held": 7712.0851,
+      "avg_cost_per_unit": 77.8,
+      "current_nav": 96.66,
+      "absolute_return_pct": 24.24,
+      "xirr_pct": 8.8,
+      "months_invested": 60
+    },
+    "lump_sum_signal": {
+      "current_nav": 96.6557,
+      "52w_high": 108.2085,
+      "52w_low": 89.9794,
+      "pct_from_52w_high": -10.68,
+      "pct_from_ath": -10.68,
+      "ma50": 105.1538,
+      "ma200": 103.9829,
+      "golden_cross": true,
+      "rsi_14": 18.1,
+      "entry_score": 60.0,
+      "signal": "HOLD / SIP",
+      "rationale": "Neutral conditions \u2014 continue SIP, avoid large lump sum."
+    },
+    "data_points": 2766,
+    "fund_name": "SBI Bluechip Fund - Growth"
+  },
+  "120505": {
+    "scheme_code": "120505",
+    "scheme_name": "",
+    "latest_nav": 123.79,
+    "as_of_date": "2026-03-13",
+    "cagr": {
+      "1y": 11.72,
+      "3y": 19.31,
+      "5y": 15.0,
+      "10y": 18.17
+    },
+    "risk": {
+      "sharpe_3y": 0.897,
+      "max_drawdown": 29.36,
+      "volatility_3y_ann": 13.83
+    },
+    "sip_simulation": {
+      "total_invested": 600000,
+      "current_value": 814750.07,
+      "units_held": 6581.7116,
+      "avg_cost_per_unit": 91.16,
+      "current_nav": 123.79,
+      "absolute_return_pct": 35.79,
+      "xirr_pct": 12.44,
+      "months_invested": 60
+    },
+    "lump_sum_signal": {
+      "current_nav": 123.79,
+      "52w_high": 135.17,
+      "52w_low": 110.21,
+      "pct_from_52w_high": -8.42,
+      "pct_from_ath": -8.76,
+      "ma50": 130.425,
+      "ma200": 131.7684,
+      "golden_cross": false,
+      "rsi_14": 25.7,
+      "entry_score": 75.0,
+      "signal": "BUY",
+      "rationale": "Fund is trading at a discount with favourable technical setup."
+    },
+    "data_points": 2765,
+    "fund_name": "Axis Long Term Equity (ELSS) - Growth"
+  },
+  "100356": {
+    "scheme_code": "100356",
+    "scheme_name": "",
+    "latest_nav": 385.44,
+    "as_of_date": "2026-03-13",
+    "cagr": {
+      "1y": 9.21,
+      "3y": 17.38,
+      "5y": 17.27,
+      "10y": 16.05
+    },
+    "risk": {
+      "sharpe_3y": 1.135,
+      "max_drawdown": 30.76,
+      "volatility_3y_ann": 9.13
+    },
+    "sip_simulation": {
+      "total_invested": 600000,
+      "current_value": 841398.3,
+      "units_held": 2182.9553,
+      "avg_cost_per_unit": 274.86,
+      "current_nav": 385.44,
+      "absolute_return_pct": 40.23,
+      "xirr_pct": 13.77,
+      "months_invested": 60
+    },
+    "lump_sum_signal": {
+      "current_nav": 385.44,
+      "52w_high": 414.8,
+      "52w_low": 352.96,
+      "pct_from_52w_high": -7.08,
+      "pct_from_ath": -7.08,
+      "ma50": 405.85,
+      "ma200": 400.509,
+      "golden_cross": true,
+      "rsi_14": 24.4,
+      "entry_score": 60.0,
+      "signal": "HOLD / SIP",
+      "rationale": "Neutral conditions \u2014 continue SIP, avoid large lump sum."
+    },
+    "data_points": 2758,
+    "fund_name": "UTI Nifty 50 Index Fund - Growth"
+  },
+  "118701": {
+    "scheme_code": "118701",
+    "scheme_name": "",
+    "latest_nav": 6723.7433,
+    "as_of_date": "2026-03-15",
+    "cagr": {
+      "1y": 6.38,
+      "3y": 7.01,
+      "5y": 6.0,
+      "10y": 6.22
+    },
+    "risk": {
+      "sharpe_3y": -6.054,
+      "max_drawdown": 0.22,
+      "volatility_3y_ann": 0.16
+    },
+    "sip_simulation": {
+      "total_invested": 600000,
+      "current_value": 707005.5,
+      "units_held": 105.1506,
+      "avg_cost_per_unit": 5706.1,
+      "current_nav": 6723.74,
+      "absolute_return_pct": 17.83,
+      "xirr_pct": 6.62,
+      "months_invested": 60
+    },
+    "lump_sum_signal": {
+      "current_nav": 6723.7433,
+      "52w_high": 6723.7433,
+      "52w_low": 6322.1099,
+      "pct_from_52w_high": 0.0,
+      "pct_from_ath": 0.0,
+      "ma50": 6693.8865,
+      "ma200": 6600.0035,
+      "golden_cross": true,
+      "rsi_14": 100.0,
+      "entry_score": 25.0,
+      "signal": "WAIT",
+      "rationale": "Fund near highs / overbought \u2014 wait for better entry."
+    },
+    "data_points": 3503,
+    "fund_name": "ICICI Pru Bluechip Fund - Growth"
+  },
+  "119270": {
+    "scheme_code": "119270",
+    "scheme_name": "Tata Growing Economies Infrastructure Fund Scheme A-Direct Plan Dividend",
+    "latest_nav": 18.0306,
+    "as_of_date": "2015-03-20",
+    "cagr": {
+      "1y": 22.18,
+      "3y": null,
+      "5y": null,
+      "10y": null
+    },
+    "risk": {
+      "sharpe_3y": NaN,
+      "max_drawdown": NaN,
+      "volatility_3y_ann": NaN
+    },
+    "sip_simulation": {
+      "total_invested": 600000,
+      "current_value": Infinity,
+      "units_held": Infinity,
+      "avg_cost_per_unit": 0.0,
+      "current_nav": 18.03,
+      "absolute_return_pct": Infinity,
+      "xirr_pct": null,
+      "months_invested": 60
+    },
+    "lump_sum_signal": {
+      "current_nav": 18.0306,
+      "52w_high": 18.6547,
+      "52w_low": 14.7591,
+      "pct_from_52w_high": -3.35,
+      "pct_from_ath": -3.35,
+      "ma50": 18.0972,
+      "ma200": 17.5263,
+      "golden_cross": true,
+      "rsi_14": 42.1,
+      "entry_score": 45.0,
+      "signal": "HOLD / SIP",
+      "rationale": "Neutral conditions \u2014 continue SIP, avoid large lump sum."
+    },
+    "data_points": 438,
+    "fund_name": "Kotak Emerging Equity Fund - Growth"
+  }
+}

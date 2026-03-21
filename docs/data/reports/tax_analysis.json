@@ -1,0 +1,22 @@
+{
+  "elss_vs_equity": {
+    "monthly_sip": 10000,
+    "years": 10,
+    "expected_cagr_pct": 15.0,
+    "gross_corpus": 2630181.86,
+    "elss": {
+      "net_corpus": 2834908.22,
+      "tax_on_gains": 169673.64,
+      "80c_tax_saved": 374400.0,
+      "effective_return": 136.24
+    },
+    "regular_equity": {
+      "net_corpus": 2460508.22,
+      "tax_on_gains": 169673.64,
+      "80c_tax_saved": 0,
+      "effective_return": 105.04
+    },
+    "elss_advantage_rs": 374400.0,
+    "verdict": "ELSS is better"
+  }
+}

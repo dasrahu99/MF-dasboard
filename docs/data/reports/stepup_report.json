@@ -1,0 +1,558 @@
+{
+  "comparison": {
+    "flat_sip": {
+      "monthly_sip_constant": 10000,
+      "total_invested": 2900000.0,
+      "final_corpus": 21300337.73,
+      "real_value": 6641545.99,
+      "wealth_multiple": 7.34,
+      "yearly": [
+        {
+          "year": 1,
+          "monthly_sip": 10000.0,
+          "total_invested": 620000.0,
+          "corpus": 703041.88,
+          "real_value": 663247.06,
+          "wealth_multiple": 1.13,
+          "gain": 83041.88
+        },
+        {
+          "year": 2,
+          "monthly_sip": 10000.0,
+          "total_invested": 740000.0,
+          "corpus": 936540.04,
+          "real_value": 833517.31,
+          "wealth_multiple": 1.27,
+          "gain": 196540.04
+        },
+        {
+          "year": 3,
+          "monthly_sip": 10000.0,
+          "total_invested": 860000.0,
+          "corpus": 1205062.93,
+          "real_value": 1011794.08,
+          "wealth_multiple": 1.4,
+          "gain": 345062.93
+        },
+        {
+          "year": 4,
+          "monthly_sip": 10000.0,
+          "total_invested": 980000.0,
+          "corpus": 1513864.25,
+          "real_value": 1199122.28,
+          "wealth_multiple": 1.54,
+          "gain": 533864.25
+        },
+        {
+          "year": 5,
+          "monthly_sip": 10000.0,
+          "total_invested": 1100000.0,
+          "corpus": 1868985.77,
+          "real_value": 1396614.89,
+          "wealth_multiple": 1.7,
+          "gain": 768985.77
+        },
+        {
+          "year": 6,
+          "monthly_sip": 10000.0,
+          "total_invested": 1220000.0,
+          "corpus": 2277375.52,
+          "real_value": 1605459.88,
+          "wealth_multiple": 1.87,
+          "gain": 1057375.52
+        },
+        {
+          "year": 7,
+          "monthly_sip": 10000.0,
+          "total_invested": 1340000.0,
+          "corpus": 2747023.73,
+          "real_value": 1826927.67,
+          "wealth_multiple": 2.05,
+          "gain": 1407023.73
+        },
+        {
+          "year": 8,
+          "monthly_sip": 10000.0,
+          "total_invested": 1460000.0,
+          "corpus": 3287119.17,
+          "real_value": 2062379.23,
+          "wealth_multiple": 2.25,
+          "gain": 1827119.17
+        },
+        {
+          "year": 9,
+          "monthly_sip": 10000.0,
+          "total_invested": 1580000.0,
+          "corpus": 3908228.93,
+          "real_value": 2313274.7,
+          "wealth_multiple": 2.47,
+          "gain": 2328228.93
+        },
+        {
+          "year": 10,
+          "monthly_sip": 10000.0,
+          "total_invested": 1700000.0,
+          "corpus": 4622505.15,
+          "real_value": 2581182.73,
+          "wealth_multiple": 2.72,
+          "gain": 2922505.15
+        },
+        {
+          "year": 11,
+          "monthly_sip": 10000.0,
+          "total_invested": 1820000.0,
+          "corpus": 5443922.8,
+          "real_value": 2867790.62,
+          "wealth_multiple": 2.99,
+          "gain": 3623922.8
+        },
+        {
+          "year": 12,
+          "monthly_sip": 10000.0,
+          "total_invested": 1940000.0,
+          "corpus": 6388553.1,
+          "real_value": 3174915.17,
+          "wealth_multiple": 3.29,
+          "gain": 4448553.1
+        },
+        {
+          "year": 13,
+          "monthly_sip": 10000.0,
+          "total_invested": 2060000.0,
+          "corpus": 7474877.95,
+          "real_value": 3504514.47,
+          "wealth_multiple": 3.63,
+          "gain": 5414877.95
+        },
+        {
+          "year": 14,
+          "monthly_sip": 10000.0,
+          "total_invested": 2180000.0,
+          "corpus": 8724151.52,
+          "real_value": 3858700.63,
+          "wealth_multiple": 4.0,
+          "gain": 6544151.52
+        },
+        {
+          "year": 15,
+          "monthly_sip": 10000.0,
+          "total_invested": 2300000.0,
+          "corpus": 10160816.13,
+          "real_value": 4239753.56,
+          "wealth_multiple": 4.42,
+          "gain": 7860816.13
+        },
+        {
+          "year": 16,
+          "monthly_sip": 10000.0,
+          "total_invested": 2420000.0,
+          "corpus": 11812980.43,
+          "real_value": 4650135.84,
+          "wealth_multiple": 4.88,
+          "gain": 9392980.43
+        },
+        {
+          "year": 17,
+          "monthly_sip": 10000.0,
+          "total_invested": 2540000.0,
+          "corpus": 13712969.37,
+          "real_value": 5092508.9,
+          "wealth_multiple": 5.4,
+          "gain": 11172969.37
+        },
+        {
+          "year": 18,
+          "monthly_sip": 10000.0,
+          "total_invested": 2660000.0,
+          "corpus": 15897956.66,
+          "real_value": 5569750.41,
+          "wealth_multiple": 5.98,
+          "gain": 13237956.66
+        },
+        {
+          "year": 19,
+          "monthly_sip": 10000.0,
+          "total_invested": 2780000.0,
+          "corpus": 18410692.04,
+          "real_value": 6084973.25,
+          "wealth_multiple": 6.62,
+          "gain": 15630692.04
+        },
+        {
+          "year": 20,
+          "monthly_sip": 10000.0,
+          "total_invested": 2900000.0,
+          "corpus": 21300337.73,
+          "real_value": 6641545.99,
+          "wealth_multiple": 7.34,
+          "gain": 18400337.73
+        }
+      ]
+    },
+    "stepup_sip": {
+      "initial_sip": 10000,
+      "final_monthly_sip": 61159.09,
+      "annual_stepup_pct": 10.0,
+      "total_invested": 7372999.94,
+      "final_corpus": 32867278.43,
+      "real_value": 10248172.78,
+      "wealth_multiple": 4.46,
+      "yearly": [
+        {
+          "year": 1,
+          "monthly_sip": 10000.0,
+          "total_invested": 620000.0,
+          "corpus": 703041.88,
+          "real_value": 663247.06,
+          "wealth_multiple": 1.13,
+          "gain": 83041.88
+        },
+        {
+          "year": 2,
+          "monthly_sip": 11000.0,
+          "total_invested": 752000.0,
+          "corpus": 949344.23,
+          "real_value": 844912.99,
+          "wealth_multiple": 1.26,
+          "gain": 197344.23
+        },
+        {
+          "year": 3,
+          "monthly_sip": 12100.0,
+          "total_invested": 897200.0,
+          "corpus": 1246676.54,
+          "real_value": 1046733.67,
+          "wealth_multiple": 1.39,
+          "gain": 349476.54
+        },
+        {
+          "year": 4,
+          "monthly_sip": 13310.0,
+          "total_invested": 1056920.0,
+          "corpus": 1604101.77,
+          "real_value": 1270598.85,
+          "wealth_multiple": 1.52,
+          "gain": 547181.77
+        },
+        {
+          "year": 5,
+          "monthly_sip": 14641.0,
+          "total_invested": 1232612.0,
+          "corpus": 2032183.15,
+          "real_value": 1518565.47,
+          "wealth_multiple": 1.65,
+          "gain": 799571.15
+        },
+        {
+          "year": 6,
+          "monthly_sip": 16105.1,
+          "total_invested": 1425873.2,
+          "corpus": 2543223.36,
+          "real_value": 1792872.11,
+          "wealth_multiple": 1.78,
+          "gain": 1117350.16
+        },
+        {
+          "year": 7,
+          "monthly_sip": 17715.61,
+          "total_invested": 1638460.52,
+          "corpus": 3151540.86,
+          "real_value": 2095954.67,
+          "wealth_multiple": 1.92,
+          "gain": 1513080.34
+        },
+        {
+          "year": 8,
+          "monthly_sip": 19487.17,
+          "total_invested": 1872306.57,
+          "corpus": 3873789.39,
+          "real_value": 2430463.39,
+          "wealth_multiple": 2.07,
+          "gain": 2001482.82
+        },
+        {
+          "year": 9,
+          "monthly_sip": 21435.89,
+          "total_invested": 2129537.23,
+          "corpus": 4729326.95,
+          "real_value": 2799281.35,
+          "wealth_multiple": 2.22,
+          "gain": 2599789.72
+        },
+        {
+          "year": 10,
+          "monthly_sip": 23579.48,
+          "total_invested": 2412490.95,
+          "corpus": 5740642.05,
+          "real_value": 3205544.54,
+          "wealth_multiple": 2.38,
+          "gain": 3328151.1
+        },
+        {
+          "year": 11,
+          "monthly_sip": 25937.42,
+          "total_invested": 2723740.05,
+          "corpus": 6933846.02,
+          "real_value": 3652663.59,
+          "wealth_multiple": 2.55,
+          "gain": 4210105.97
+        },
+        {
+          "year": 12,
+          "monthly_sip": 28531.17,
+          "total_invested": 3066114.05,
+          "corpus": 8339241.35,
+          "real_value": 4144347.47,
+          "wealth_multiple": 2.72,
+          "gain": 5273127.3
+        },
+        {
+          "year": 13,
+          "monthly_sip": 31384.28,
+          "total_invested": 3442725.46,
+          "corpus": 9991977.83,
+          "real_value": 4684629.11,
+          "wealth_multiple": 2.9,
+          "gain": 6549252.37
+        },
+        {
+          "year": 14,
+          "monthly_sip": 34522.71,
+          "total_invested": 3856998.0,
+          "corpus": 11932809.8,
+          "real_value": 5277893.28,
+          "wealth_multiple": 3.09,
+          "gain": 8075811.8
+        },
+        {
+          "year": 15,
+          "monthly_sip": 37974.98,
+          "total_invested": 4312697.8,
+          "corpus": 14208970.1,
+          "real_value": 5928906.77,
+          "wealth_multiple": 3.29,
+          "gain": 9896272.3
+        },
+        {
+          "year": 16,
+          "monthly_sip": 41772.48,
+          "total_invested": 4813967.58,
+          "corpus": 16875178.33,
+          "real_value": 6642851.24,
+          "wealth_multiple": 3.51,
+          "gain": 12061210.75
+        },
+        {
+          "year": 17,
+          "monthly_sip": 45949.73,
+          "total_invested": 5365364.34,
+          "corpus": 19994804.07,
+          "real_value": 7425358.79,
+          "wealth_multiple": 3.73,
+          "gain": 14629439.72
+        },
+        {
+          "year": 18,
+          "monthly_sip": 50544.7,
+          "total_invested": 5971900.78,
+          "corpus": 23641208.56,
+          "real_value": 8282550.63,
+          "wealth_multiple": 3.96,
+          "gain": 17669307.78
+        },
+        {
+          "year": 19,
+          "monthly_sip": 55599.17,
+          "total_invested": 6639090.85,
+          "corpus": 27899292.12,
+          "real_value": 9221079.03,
+          "wealth_multiple": 4.2,
+          "gain": 21260201.26
+        },
+        {
+          "year": 20,
+          "monthly_sip": 61159.09,
+          "total_invested": 7372999.94,
+          "corpus": 32867278.43,
+          "real_value": 10248172.78,
+          "wealth_multiple": 4.46,
+          "gain": 25494278.49
+        }
+      ]
+    },
+    "step_up_advantage": {
+      "extra_corpus": 11566940.7,
+      "extra_invested": 4472999.94,
+      "extra_gain_from_stepup": 7093940.76,
+      "corpus_boost_pct": 54.3
+    },
+    "params": {
+      "years": 20,
+      "expected_cagr_pct": 15.0,
+      "inflation_pct": 6.0,
+      "initial_lump_sum": 500000
+    }
+  },
+  "goals": {
+    "retirement_2cr": {
+      "label": "Retirement \u20b92 Cr",
+      "plan": {
+        "target_corpus": 20000000,
+        "required_initial_sip": 626.0,
+        "final_monthly_sip": 6165.93,
+        "total_invested": 1238783.11,
+        "projected_corpus": 19999767.34,
+        "years": 25,
+        "annual_stepup_pct": 10.0,
+        "expected_cagr_pct": 15.0,
+        "milestones": [
+          {
+            "target_pct": 25,
+            "amount": 5000000.0,
+            "reached_year": 16
+          },
+          {
+            "target_pct": 50,
+            "amount": 10000000.0,
+            "reached_year": 21
+          },
+          {
+            "target_pct": 75,
+            "amount": 15000000.0,
+            "reached_year": 23
+          }
+        ]
+      }
+    },
+    "retirement_5cr": {
+      "label": "Retirement \u20b95 Cr",
+      "plan": {
+        "target_corpus": 50000000,
+        "required_initial_sip": 5931.0,
+        "final_monthly_sip": 58418.76,
+        "total_invested": 7499556.91,
+        "projected_corpus": 50001754.4,
+        "years": 25,
+        "annual_stepup_pct": 10.0,
+        "expected_cagr_pct": 15.0,
+        "milestones": [
+          {
+            "target_pct": 25,
+            "amount": 12500000.0,
+            "reached_year": 17
+          },
+          {
+            "target_pct": 50,
+            "amount": 25000000.0,
+            "reached_year": 21
+          },
+          {
+            "target_pct": 75,
+            "amount": 37500000.0,
+            "reached_year": 24
+          },
+          {
+            "target_pct": 100,
+            "amount": 50000000.0,
+            "reached_year": 25
+          }
+        ]
+      }
+    },
+    "child_education_1cr": {
+      "label": "Child Education \u20b91 Cr",
+      "plan": {
+        "target_corpus": 10000000,
+        "required_initial_sip": 5849.0,
+        "final_monthly_sip": 22211.57,
+        "total_invested": 2730046.95,
+        "projected_corpus": 9999673.75,
+        "years": 15,
+        "annual_stepup_pct": 10.0,
+        "expected_cagr_pct": 15.0,
+        "milestones": [
+          {
+            "target_pct": 25,
+            "amount": 2500000.0,
+            "reached_year": 8
+          },
+          {
+            "target_pct": 50,
+            "amount": 5000000.0,
+            "reached_year": 11
+          },
+          {
+            "target_pct": 75,
+            "amount": 7500000.0,
+            "reached_year": 14
+          }
+        ]
+      }
+    },
+    "house_downpayment": {
+      "label": "House Down Payment \u20b950L",
+      "plan": {
+        "target_corpus": 5000000,
+        "required_initial_sip": 20147.0,
+        "final_monthly_sip": 35691.64,
+        "total_invested": 2793656.41,
+        "projected_corpus": 4999848.29,
+        "years": 7,
+        "annual_stepup_pct": 10.0,
+        "expected_cagr_pct": 15.0,
+        "milestones": [
+          {
+            "target_pct": 25,
+            "amount": 1250000.0,
+            "reached_year": 3
+          },
+          {
+            "target_pct": 50,
+            "amount": 2500000.0,
+            "reached_year": 5
+          },
+          {
+            "target_pct": 75,
+            "amount": 3750000.0,
+            "reached_year": 6
+          }
+        ]
+      }
+    },
+    "emergency_corpus": {
+      "label": "Emergency Fund \u20b920L",
+      "plan": {
+        "target_corpus": 2000000,
+        "required_initial_sip": 9687.0,
+        "final_monthly_sip": 14182.74,
+        "total_invested": 1209681.24,
+        "projected_corpus": 2000053.56,
+        "years": 5,
+        "annual_stepup_pct": 10.0,
+        "expected_cagr_pct": 15.0,
+        "milestones": [
+          {
+            "target_pct": 25,
+            "amount": 500000.0,
+            "reached_year": 1
+          },
+          {
+            "target_pct": 50,
+            "amount": 1000000.0,
+            "reached_year": 3
+          },
+          {
+            "target_pct": 75,
+            "amount": 1500000.0,
+            "reached_year": 4
+          },
+          {
+            "target_pct": 100,
+            "amount": 2000000.0,
+            "reached_year": 5
+          }
+        ]
+      }
+    }
+  }
+}

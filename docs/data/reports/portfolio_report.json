@@ -1,0 +1,270 @@
+{
+  "summary": {
+    "total_invested": 1450000.0,
+    "total_current_value": 2724149.52,
+    "total_gain": 1274149.52,
+    "absolute_return_pct": 87.87,
+    "monthly_sip_total": 16000.0,
+    "funds_count": 8
+  },
+  "benchmark": {
+    "nifty50_12m_pct": 5.84,
+    "portfolio_12m_pct": 4.09,
+    "alpha_12m_pct": -1.75
+  },
+  "diversification": {
+    "score": 95.8,
+    "grade": "Excellent",
+    "category_weights": {
+      "Small Cap": 29.5,
+      "Mid Cap": 22.8,
+      "Flexi Cap": 14.0,
+      "Large Cap": 16.9,
+      "ELSS": 6.7,
+      "Index": 10.1
+    }
+  },
+  "warnings": [],
+  "funds": {
+    "120503": {
+      "scheme_code": "120503",
+      "name": "Quant Small Cap",
+      "category": "Small Cap",
+      "sip": {
+        "total_invested": 225000,
+        "current_value": 296451.35,
+        "units_held": 2975.9949,
+        "avg_cost_per_unit": 75.6,
+        "current_nav": 99.61,
+        "absolute_return_pct": 31.76,
+        "xirr_pct": 8.81,
+        "months_invested": 75
+      },
+      "lump_sum": {
+        "invested": 50000,
+        "current_value": 93512.86,
+        "units": 938.7503,
+        "buy_nav": 53.2623,
+        "current_nav": 99.6142,
+        "absolute_return_pct": 87.03,
+        "cagr_pct": 10.6,
+        "years_held": 6.21
+      },
+      "trailing": {
+        "1m": -9.05,
+        "3m": -9.57,
+        "6m": -19.86,
+        "12m": -1.03
+      }
+    },
+    "118778": {
+      "scheme_code": "118778",
+      "name": "Nippon India Small Cap",
+      "category": "Small Cap",
+      "sip": {
+        "total_invested": 150000,
+        "current_value": 291635.11,
+        "units_held": 1704.4797,
+        "avg_cost_per_unit": 88.0,
+        "current_nav": 171.1,
+        "absolute_return_pct": 94.42,
+        "xirr_pct": 21.31,
+        "months_invested": 75
+      },
+      "lump_sum": {
+        "invested": 30000,
+        "current_value": 123102.69,
+        "units": 719.4814,
+        "buy_nav": 41.6967,
+        "current_nav": 171.0992,
+        "absolute_return_pct": 310.34,
+        "cagr_pct": 25.5,
+        "years_held": 6.21
+      },
+      "trailing": {
+        "1m": -6.67,
+        "3m": -7.66,
+        "6m": -21.93,
+        "12m": 2.54
+      }
+    },
+    "118989": {
+      "scheme_code": "118989",
+      "name": "HDFC Mid-Cap Opps",
+      "category": "Mid Cap",
+      "sip": {
+        "total_invested": 225000,
+        "current_value": 441118.86,
+        "units_held": 2152.4818,
+        "avg_cost_per_unit": 104.53,
+        "current_nav": 204.94,
+        "absolute_return_pct": 96.05,
+        "xirr_pct": 21.58,
+        "months_invested": 75
+      },
+      "lump_sum": {
+        "invested": 50000,
+        "current_value": 180102.47,
+        "units": 878.8273,
+        "buy_nav": 56.894,
+        "current_nav": 204.935,
+        "absolute_return_pct": 260.2,
+        "cagr_pct": 22.9,
+        "years_held": 6.21
+      },
+      "trailing": {
+        "1m": -8.55,
+        "3m": -8.56,
+        "6m": -12.29,
+        "12m": 8.83
+      }
+    },
+    "122639": {
+      "scheme_code": "122639",
+      "name": "Parag Parikh Flexi Cap",
+      "category": "Flexi Cap",
+      "sip": {
+        "total_invested": 150000,
+        "current_value": 254627.25,
+        "units_held": 2900.3864,
+        "avg_cost_per_unit": 51.72,
+        "current_nav": 87.79,
+        "absolute_return_pct": 69.75,
+        "xirr_pct": 16.93,
+        "months_invested": 75
+      },
+      "lump_sum": {
+        "invested": 40000,
+        "current_value": 126309.52,
+        "units": 1438.7558,
+        "buy_nav": 27.8018,
+        "current_nav": 87.7908,
+        "absolute_return_pct": 215.77,
+        "cagr_pct": 20.32,
+        "years_held": 6.21
+      },
+      "trailing": {
+        "1m": -5.53,
+        "3m": -7.02,
+        "6m": -13.51,
+        "12m": 3.01
+      }
+    },
+    "120586": {
+      "scheme_code": "120586",
+      "name": "Mirae Asset Large Cap",
+      "category": "Large Cap",
+      "sip": {
+        "total_invested": 150000,
+        "current_value": 234921.1,
+        "units_held": 2067.9674,
+        "avg_cost_per_unit": 72.53,
+        "current_nav": 113.6,
+        "absolute_return_pct": 56.61,
+        "xirr_pct": 14.34,
+        "months_invested": 75
+      },
+      "lump_sum": {
+        "invested": 30000,
+        "current_value": 72005.07,
+        "units": 633.8475,
+        "buy_nav": 47.33,
+        "current_nav": 113.6,
+        "absolute_return_pct": 140.02,
+        "cagr_pct": 15.13,
+        "years_held": 6.21
+      },
+      "trailing": {
+        "1m": -9.12,
+        "3m": -10.16,
+        "6m": -15.59,
+        "12m": 2.24
+      }
+    },
+    "119598": {
+      "scheme_code": "119598",
+      "name": "SBI Bluechip",
+      "category": "Large Cap",
+      "sip": {
+        "total_invested": 75000,
+        "current_value": 108878.44,
+        "units_held": 1129.4198,
+        "avg_cost_per_unit": 66.41,
+        "current_nav": 96.4,
+        "absolute_return_pct": 45.17,
+        "xirr_pct": 11.91,
+        "months_invested": 75
+      },
+      "lump_sum": {
+        "invested": 20000,
+        "current_value": 43564.29,
+        "units": 451.9018,
+        "buy_nav": 44.2574,
+        "current_nav": 96.4021,
+        "absolute_return_pct": 117.82,
+        "cagr_pct": 13.34,
+        "years_held": 6.21
+      },
+      "trailing": {
+        "1m": -9.17,
+        "3m": -9.31,
+        "6m": -14.52,
+        "12m": 2.3
+      }
+    },
+    "120505": {
+      "scheme_code": "120505",
+      "name": "Axis ELSS Tax Saver",
+      "category": "ELSS",
+      "sip": {
+        "total_invested": 112500,
+        "current_value": 183812.38,
+        "units_held": 1485.2326,
+        "avg_cost_per_unit": 75.75,
+        "current_nav": 123.76,
+        "absolute_return_pct": 63.39,
+        "xirr_pct": 15.7,
+        "months_invested": 75
+      },
+      "trailing": {
+        "1m": -6.56,
+        "3m": -6.22,
+        "6m": -16.07,
+        "12m": 6.64
+      }
+    },
+    "100356": {
+      "scheme_code": "100356",
+      "name": "UTI Nifty 50 Index",
+      "category": "Index",
+      "sip": {
+        "total_invested": 112500,
+        "current_value": 191781.45,
+        "units_held": 498.4703,
+        "avg_cost_per_unit": 225.69,
+        "current_nav": 384.74,
+        "absolute_return_pct": 70.47,
+        "xirr_pct": 17.07,
+        "months_invested": 75
+      },
+      "lump_sum": {
+        "invested": 30000,
+        "current_value": 82326.68,
+        "units": 213.98,
+        "buy_nav": 140.2,
+        "current_nav": 384.74,
+        "absolute_return_pct": 174.42,
+        "cagr_pct": 17.64,
+        "years_held": 6.21
+      },
+      "trailing": {
+        "1m": -5.94,
+        "3m": -6.04,
+        "6m": -9.47,
+        "12m": 5.84
+      }
+    }
+  },
+  "sip_start": "2020-01-01",
+  "as_of_date": "2026-03-21"
+}

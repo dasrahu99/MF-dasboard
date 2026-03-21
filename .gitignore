@@ -1,5 +1,6 @@
 .venv/
-docs/data/
+docs/data/mf_navs.db
+docs/data/pipeline.log
 __pycache__/
 *.pyc
 .DS_Store
