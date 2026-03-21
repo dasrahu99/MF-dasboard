@@ -203,7 +203,13 @@ def run_daily_pipeline():
         try:
             hist = get_nav_history(code, conn, from_date="2015-01-01")
             if len(hist) < 100:
-                continue  # Skip funds that weren't successfully fetched during discovery
+                log.info("Fetching history for %s...", code)
+                hist = fetch_historical_nav(code, conn)
+                if hist.empty:
+                    log.warning("No history found for %s", code)
+                    continue
+            else:
+                log.info("Using %d cached records for %s", len(hist), code)
 
             # Attach stored category (Fix 2)
             category = get_fund_category(code, conn)
