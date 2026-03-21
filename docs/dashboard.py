@@ -177,7 +177,19 @@ if "OVERVIEW" in page:
     funds = [v for v in report.values() if "error" not in v]
     mom_by_code = {m.get("scheme_code"): m for m in (momentum or [])}
 
-    # ── Rank and keep only Top N funds ────────────────────────────
+    # ── KPI stats from ALL funds (before narrowing) ───────────────
+    all_funds = funds
+    all_momentum = momentum or []
+    avg5 = [f.get("cagr",{}).get("5y") for f in all_funds if f.get("cagr",{}).get("5y")]
+    avg5 = round(sum(avg5)/len(avg5),1) if avg5 else None
+    buys = sum(1 for m in all_momentum if m.get("signal") in ("BUY","STRONG BUY"))
+    best = max(all_funds, key=lambda f: f.get("risk",{}).get("sharpe_3y") or 0)
+    neutrals = [m for m in all_momentum if m.get("signal") in ("NEUTRAL","REDUCE")
+                and (m.get("composite_score") or 0) >= 20]
+    neutrals.sort(key=lambda x: x.get("composite_score",0), reverse=True)
+    total_analyzed = len(all_funds)
+
+    # ── Rank and keep only Top N funds for display ────────────────
     TOP_N = 10
 
     def _rank_score(f):
@@ -192,9 +204,9 @@ if "OVERVIEW" in page:
     top_funds = funds[:TOP_N]
     top_codes = {f.get("scheme_code", "") for f in top_funds}
 
-    # Narrow report & momentum to top N only
+    # Narrow report & momentum to top N only (for charts/tables)
     report = {k: v for k, v in report.items() if k in top_codes}
-    momentum = [m for m in (momentum or []) if m.get("scheme_code") in top_codes]
+    momentum = [m for m in all_momentum if m.get("scheme_code") in top_codes]
     funds = top_funds
     mom_by_code = {m.get("scheme_code"): m for m in momentum}
 
@@ -231,17 +243,9 @@ if "OVERVIEW" in page:
     </div>
     """, unsafe_allow_html=True)
 
-    # ── KPI cards ─────────────────────────────────────────────────
-    avg5 = [f.get("cagr",{}).get("5y") for f in funds if f.get("cagr",{}).get("5y")]
-    avg5 = round(sum(avg5)/len(avg5),1) if avg5 else None
-    buys = sum(1 for m in (momentum or []) if m.get("signal") in ("BUY","STRONG BUY"))
-    best = max(funds, key=lambda f: f.get("risk",{}).get("sharpe_3y") or 0)
-    neutrals = [m for m in (momentum or []) if m.get("signal") in ("NEUTRAL","REDUCE")
-                and (m.get("composite_score") or 0) >= 20]
-    neutrals.sort(key=lambda x: x.get("composite_score",0), reverse=True)
-
+    # ── KPI cards (using full-market stats) ───────────────────────
     k1,k2,k3,k4,k5 = st.columns(5)
-    k1.metric("Top Funds",  len(funds))
+    k1.metric("Funds Analyzed",  total_analyzed, delta=f"Top {TOP_N} shown")
     k2.metric("Avg 5Y CAGR",    f"{avg5}%" if avg5 else "—",    delta="vs Nifty ~14%")
     k3.metric("BUY signals",    buys,                            delta="active now")
     k4.metric("Best Sharpe",    best.get("fund_name","")[:16],   delta=f"{best.get('risk',{}).get('sharpe_3y','—')}")
