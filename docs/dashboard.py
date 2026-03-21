@@ -118,7 +118,7 @@ with st.sidebar:
     <div style="margin-top:1rem;">
     """, unsafe_allow_html=True)
 
-    report_check = load(LATEST_JSON)
+    report_check = load(TOP10_JSON)
     modules = [
         ("FETCHER",   bool(report_check)),
         ("ENGINE",    bool(report_check)),
@@ -142,7 +142,7 @@ with st.sidebar:
 # ════════════════════════════════════════════════════════════════════
 if "OVERVIEW" in page:
 
-    report = load(LATEST_JSON)
+    report = load(TOP10_JSON)
     momentum = load(MOMENTUM_JSON)
     if not report:
         st.warning("Run `python pipeline.py` to generate data.")
@@ -378,7 +378,10 @@ elif "MOMENTUM" in page:
                 '8-factor composite scoring · 0–100 scale · updated daily</p>',
                 unsafe_allow_html=True)
 
-    momentum = load(MOMENTUM_JSON)
+    report = load(TOP10_JSON)
+    valid_codes = set(report.keys()) if report else set()
+    momentum_full = load(MOMENTUM_JSON)
+    momentum = [m for m in (momentum_full or []) if m.get("scheme_code") in valid_codes]
     if not momentum:
         st.info("Run `python momentum.py` to generate momentum scores.")
         st.stop()
@@ -786,7 +789,7 @@ elif "TAX" in page:
                 'Resident Individual · LTCG 12.5% · STCG 20% · 4% cess · FY 2024-25</p>',
                 unsafe_allow_html=True)
 
-    report = load(LATEST_JSON)
+    report = load(TOP10_JSON)
     if not report:
         st.warning("Run pipeline.py first.")
         st.stop()
@@ -863,7 +866,10 @@ elif "TAX" in page:
 elif "CONTRARIAN" in page:
 
     CONTRARIAN_JSON = REPORTS / "contrarian_analysis.json"
-    contrarian = load(CONTRARIAN_JSON)
+    report = load(TOP10_JSON)
+    valid_codes = set(report.keys()) if report else set()
+    contrarian_full = load(CONTRARIAN_JSON)
+    contrarian = {k: v for k, v in (contrarian_full or {}).items() if k in valid_codes}
 
     st.markdown("<h1>Contrarian Intelligence</h1>", unsafe_allow_html=True)
     st.markdown(

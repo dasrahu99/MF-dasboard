@@ -196,18 +196,14 @@ def run_daily_pipeline():
 
     # Step 2 — Process watchlist funds
     all_reports = {}
-    for code, name in WATCHLIST.items():
-        log.info("Processing: %s [%s]", name, code)
+    dynamic_watchlist = get_dynamic_watchlist(nav_df)
+    log.info("Evaluating %d equity funds from DB cache...", len(dynamic_watchlist))
+    
+    for code, name in dynamic_watchlist.items():
         try:
             hist = get_nav_history(code, conn, from_date="2015-01-01")
             if len(hist) < 100:
-                log.info("Fetching history for %s...", code)
-                hist = fetch_historical_nav(code, conn)
-                if hist.empty:
-                    log.warning("No history found for %s", code)
-                    continue
-            else:
-                log.info("Using %d cached records for %s", len(hist), code)
+                continue  # Skip funds that weren't successfully fetched during discovery
 
             # Attach stored category (Fix 2)
             category = get_fund_category(code, conn)
@@ -239,14 +235,14 @@ def run_daily_pipeline():
     # Step 5 — Momentum scoring
     log.info("Running momentum scoring...")
     try:
-        enrich_latest_report(WATCHLIST, conn)
+        enrich_latest_report(dynamic_watchlist, conn)
     except Exception as e:
         log.error("Momentum scoring failed: %s", e)
 
     # Step 6 — Contrarian analysis
     log.info("Running contrarian analysis...")
     try:
-        run_contrarian_analysis(WATCHLIST, conn, SIP_AMOUNT)
+        run_contrarian_analysis(dynamic_watchlist, conn, SIP_AMOUNT)
     except Exception as e:
         log.error("Contrarian analysis failed: %s", e)
 
@@ -265,7 +261,9 @@ def run_daily_pipeline():
     # Step 8 — Portfolio report
     log.info("Running portfolio simulation...")
     try:
-        build_portfolio_report(WATCHLIST, conn=conn)
+        # Only simulate the portfolio for the absolute best Top 10 funds
+        top10_watchlist = {code: rep.get("fund_name", "") for code, rep in top10_report.items()}
+        build_portfolio_report(top10_watchlist, conn=conn)
     except Exception as e:
         log.error("Portfolio report failed: %s", e)
 
