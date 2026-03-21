@@ -865,7 +865,7 @@ elif "TAX" in page:
 # ════════════════════════════════════════════════════════════════════
 elif "CONTRARIAN" in page:
 
-    CONTRARIAN_JSON = REPORTS_DIR / "contrarian_analysis.json"
+    CONTRARIAN_JSON = REPORTS / "contrarian_analysis.json"
     contrarian = load(CONTRARIAN_JSON)
 
     st.markdown("<h1>Contrarian Intelligence</h1>", unsafe_allow_html=True)
