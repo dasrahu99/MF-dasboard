@@ -23,7 +23,7 @@ st.set_page_config(
 
 # ── Inject theme ──────────────────────────────────────────────────
 def load_css():
-    css_path = Path("theme.css")
+    css_path = Path(__file__).parent / "theme.css"
     if css_path.exists():
         with open(css_path) as f:
             raw = f.read()
@@ -564,7 +564,7 @@ elif "PORTFOLIO" in page:
                 textfont=dict(family="DM Mono", size=10),
                 textinfo="label+percent",
             ))
-            fig.update_layout(**{k:v for k,v in PLOTLY.items() if k not in ("xaxis","yaxis")},
+            fig.update_layout(**{k:v for k,v in PLOTLY.items() if k not in ("xaxis","yaxis","margin")},
                               height=280, margin=dict(l=0,r=0,t=8,b=0),
                               showlegend=False)
             fig.add_annotation(text=f"<b>{len(cat_w)}</b><br>categories",
