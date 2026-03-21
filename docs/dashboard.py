@@ -258,7 +258,8 @@ if "OVERVIEW" in page:
             textposition="outside",
             textfont=dict(family="DM Mono", size=10, color="#00e5ff"),
         ))
-        fig.update_layout(**PLOTLY, height=240,
+        fig.update_layout(**{k:v for k,v in PLOTLY.items() if k not in ("xaxis","yaxis")},
+                          height=240,
                           yaxis=dict(autorange="reversed",
                                      **PLOTLY["yaxis"]),
                           xaxis=dict(title="5Y CAGR %", **PLOTLY["xaxis"]))
