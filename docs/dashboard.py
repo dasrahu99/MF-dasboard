@@ -216,7 +216,7 @@ if "OVERVIEW" in page:
     buys = sum(1 for m in (momentum or []) if m.get("signal") in ("BUY","STRONG BUY"))
     best = max(funds, key=lambda f: f.get("risk",{}).get("sharpe_3y") or 0)
     neutrals = [m for m in (momentum or []) if m.get("signal") in ("NEUTRAL","REDUCE")
-                and (m.get("composite_score") or 0) >= 35]
+                and (m.get("composite_score") or 0) >= 20]
     neutrals.sort(key=lambda x: x.get("composite_score",0), reverse=True)
 
     k1,k2,k3,k4,k5 = st.columns(5)
@@ -332,9 +332,9 @@ if "OVERVIEW" in page:
     if not top3:
         st.info("No NEUTRAL funds found — run `python momentum.py` to refresh.")
     else:
-        # Build fully custom HTML cards
-        cards_html = '<div style="display:flex;gap:16px;flex-wrap:wrap;">'
-        for m in top3:
+        # Render each card in its own st.columns slot to avoid HTML size limits
+        wl_cols = st.columns(len(top3))
+        for wl_col, m in zip(wl_cols, top3):
             score  = m.get("composite_score", 0)
             fa     = m.get("factors", {})
             tr     = fa.get("trailing_returns", {})
@@ -355,101 +355,66 @@ if "OVERVIEW" in page:
             r1m_col = "#00e5ff" if r1m and r1m > 0 else "#ff4060" if r1m and r1m < 0 else "#7a9bb5"
             r3m_col = "#00e5ff" if r3m and r3m > 0 else "#ff4060" if r3m and r3m < 0 else "#7a9bb5"
 
-            # Accent colour based on proximity
             arc_col = "#00e5ff" if gap <= 5 else "#ffb300" if gap <= 15 else "#ff4060"
 
-            # Acceleration badge
-            accel_html = ""
+            # Acceleration line
+            accel_line = ""
             if accel is not None:
-                a_arrow = "▲" if accel > 0 else "▼"
-                a_col   = "#00ff88" if accel > 0 else "#ff4060"
-                accel_html = (
-                    f'<div style="margin-top:10px;padding:5px 10px;border-radius:6px;'
-                    f'background:rgba({",".join(str(int(a_col.lstrip("#")[i:i+2],16)) for i in (0,2,4))},0.12);'
-                    f'font-size:11px;color:{a_col};text-align:center;">'
-                    f'{a_arrow} {abs(accel):.1f}% momentum</div>'
-                )
+                a_icon = "▲" if accel > 0 else "▼"
+                a_col  = "#00ff88" if accel > 0 else "#ff4060"
+                accel_line = f'<div style="margin-top:10px;padding:4px 8px;border-radius:6px;background:rgba(0,0,0,0.3);font-size:10px;color:{a_col};text-align:center;">{a_icon} {abs(accel):.1f}% momentum</div>'
 
-            # Weakest factors
+            # Weakest factors line
             fs = m.get("factor_scores",{})
-            weak_html = ""
+            weak_line = ""
             if fs:
                 weak = sorted(fs.items(), key=lambda x: x[1])[:2]
-                weak_labels = " · ".join(f"{k.replace('_',' ').title()} {v*100:.0f}" for k,v in weak)
-                weak_html = (
-                    f'<div style="margin-top:8px;font-size:9px;color:#3d5a72;'
-                    f'font-family:DM Mono,monospace;letter-spacing:0.05em;">'
-                    f'WEAKEST: {weak_labels}</div>'
-                )
+                weak_line = '<div style="margin-top:6px;font-size:9px;color:#3d5a72;font-family:DM Mono,monospace;">' + " · ".join(f"{k.replace('_',' ').title()} {v*100:.0f}" for k,v in weak) + '</div>'
 
             # Sharpe line
-            sharpe_html = ""
+            sharpe_line = ""
             if sharpe and str(sharpe).lower() != "nan":
-                sharpe_html = (
-                    f'<div style="font-size:9px;color:#3d5a72;margin-top:2px;'
-                    f'font-family:DM Mono,monospace;">SHARPE 3Y: {sharpe:.2f}</div>'
-                )
+                sharpe_line = f'<div style="font-size:9px;color:#3d5a72;margin-top:2px;font-family:DM Mono,monospace;">Sharpe 3Y: {sharpe:.2f}</div>'
 
-            # SVG ring gauge
-            ring_svg = (
-                f'<svg width="80" height="80" viewBox="0 0 80 80">'
-                f'<circle cx="40" cy="40" r="34" fill="none" stroke="#162338" stroke-width="5"/>'
-                f'<circle cx="40" cy="40" r="34" fill="none" stroke="{arc_col}" stroke-width="5" '
-                f'stroke-dasharray="{pct * 2.136} {213.6 - pct * 2.136}" '
-                f'stroke-dashoffset="53.4" stroke-linecap="round"/>'
-                f'<text x="40" y="36" text-anchor="middle" fill="#e8f4f8" '
-                f'font-family="Syne,sans-serif" font-size="18" font-weight="800">{score:.0f}</text>'
-                f'<text x="40" y="50" text-anchor="middle" fill="#3d5a72" '
-                f'font-family="DM Mono,monospace" font-size="8">/ 60 BUY</text>'
+            # SVG ring — compact
+            ring = (
+                f'<svg width="64" height="64" viewBox="0 0 64 64">'
+                f'<circle cx="32" cy="32" r="27" fill="none" stroke="#162338" stroke-width="4"/>'
+                f'<circle cx="32" cy="32" r="27" fill="none" stroke="{arc_col}" stroke-width="4" '
+                f'stroke-dasharray="{pct * 1.696} {169.6 - pct * 1.696}" '
+                f'stroke-dashoffset="42.4" stroke-linecap="round"/>'
+                f'<text x="32" y="30" text-anchor="middle" fill="#e8f4f8" '
+                f'font-family="Syne,sans-serif" font-size="16" font-weight="800">{score:.0f}</text>'
+                f'<text x="32" y="42" text-anchor="middle" fill="#3d5a72" '
+                f'font-family="DM Mono,monospace" font-size="7">/60</text>'
                 f'</svg>'
             )
 
-            cards_html += f'''
-            <div style="flex:1;min-width:240px;background:linear-gradient(145deg,#0a1628,#0d1b2a);
-                        border:1px solid rgba(0,229,255,0.08);border-radius:12px;padding:20px;
-                        position:relative;overflow:hidden;">
-              <div style="position:absolute;top:0;left:0;right:0;height:2px;
-                          background:linear-gradient(90deg,transparent,{arc_col},transparent);"></div>
-              <div style="font-family:Syne,sans-serif;font-weight:700;font-size:15px;
-                          color:#e8f4f8;margin-bottom:2px;">{name}</div>
-              <div style="font-family:DM Mono,monospace;font-size:9px;color:#3d5a72;
-                          text-transform:uppercase;letter-spacing:0.08em;margin-bottom:14px;">
-                {"5Y CAGR: "+str(cagr5)+"%" if cagr5 else "—"}</div>
-              <div style="display:flex;align-items:center;gap:18px;">
-                <div>{ring_svg}</div>
-                <div style="flex:1;">
-                  <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
-                    <div style="font-family:DM Mono,monospace;font-size:10px;color:#7a9bb5;">
-                      GAP TO BUY</div>
-                    <div style="font-family:Syne,sans-serif;font-weight:700;font-size:14px;
-                                color:{arc_col};">{gap:.1f} pts</div>
-                  </div>
-                  <div style="width:100%;height:4px;background:#162338;border-radius:2px;
-                              overflow:hidden;margin-bottom:10px;">
-                    <div style="width:{pct}%;height:100%;background:linear-gradient(90deg,{arc_col},
-                                {arc_col}88);border-radius:2px;transition:width 0.5s;"></div>
-                  </div>
-                  <div style="display:flex;gap:16px;">
-                    <div>
-                      <div style="font-size:9px;color:#3d5a72;font-family:DM Mono,monospace;">1M</div>
-                      <div style="font-size:14px;font-weight:700;color:{r1m_col};
-                                  font-family:Syne,sans-serif;">{r1m_s}</div>
-                    </div>
-                    <div>
-                      <div style="font-size:9px;color:#3d5a72;font-family:DM Mono,monospace;">3M</div>
-                      <div style="font-size:14px;font-weight:700;color:{r3m_col};
-                                  font-family:Syne,sans-serif;">{r3m_s}</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              {accel_html}
-              {weak_html}
-              {sharpe_html}
-            </div>'''
+            card = f'''<div style="background:linear-gradient(145deg,#0a1628,#0d1b2a);border:1px solid rgba(0,229,255,0.08);border-radius:12px;padding:16px;position:relative;">
+<div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,{arc_col},transparent);"></div>
+<div style="font-family:Syne,sans-serif;font-weight:700;font-size:14px;color:#e8f4f8;margin-bottom:2px;">{name}</div>
+<div style="font-family:DM Mono,monospace;font-size:9px;color:#3d5a72;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px;">{"5Y: "+str(cagr5)+"%" if cagr5 else "—"}</div>
+<div style="display:flex;align-items:center;gap:14px;">
+<div>{ring}</div>
+<div style="flex:1;">
+<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;">
+<span style="font-family:DM Mono,monospace;font-size:9px;color:#7a9bb5;">GAP</span>
+<span style="font-family:Syne,sans-serif;font-weight:700;font-size:13px;color:{arc_col};">{gap:.1f} pts</span>
+</div>
+<div style="width:100%;height:3px;background:#162338;border-radius:2px;overflow:hidden;margin-bottom:8px;">
+<div style="width:{pct}%;height:100%;background:{arc_col};border-radius:2px;"></div>
+</div>
+<div style="display:flex;gap:14px;">
+<div><div style="font-size:8px;color:#3d5a72;font-family:DM Mono,monospace;">1M</div><div style="font-size:13px;font-weight:700;color:{r1m_col};font-family:Syne,sans-serif;">{r1m_s}</div></div>
+<div><div style="font-size:8px;color:#3d5a72;font-family:DM Mono,monospace;">3M</div><div style="font-size:13px;font-weight:700;color:{r3m_col};font-family:Syne,sans-serif;">{r3m_s}</div></div>
+</div>
+</div>
+</div>
+{accel_line}{weak_line}{sharpe_line}
+</div>'''
 
-        cards_html += '</div>'
-        st.markdown(cards_html, unsafe_allow_html=True)
+            with wl_col:
+                st.markdown(card, unsafe_allow_html=True)
 
 
 # ════════════════════════════════════════════════════════════════════
