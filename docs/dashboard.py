@@ -177,6 +177,27 @@ if "OVERVIEW" in page:
     funds = [v for v in report.values() if "error" not in v]
     mom_by_code = {m.get("scheme_code"): m for m in (momentum or [])}
 
+    # ── Rank and keep only Top N funds ────────────────────────────
+    TOP_N = 10
+
+    def _rank_score(f):
+        """Composite rank: 5Y CAGR (40%) + Sharpe (30%) + Momentum (30%)."""
+        c5 = f.get("cagr",{}).get("5y") or 0
+        sh = f.get("risk",{}).get("sharpe_3y") or 0
+        code = f.get("scheme_code", "")
+        ms = mom_by_code.get(code, {}).get("composite_score", 0) or 0
+        return c5 * 0.4 + sh * 10 * 0.3 + ms * 0.1 * 0.3   # normalised blend
+
+    funds.sort(key=_rank_score, reverse=True)
+    top_funds = funds[:TOP_N]
+    top_codes = {f.get("scheme_code", "") for f in top_funds}
+
+    # Narrow report & momentum to top N only
+    report = {k: v for k, v in report.items() if k in top_codes}
+    momentum = [m for m in (momentum or []) if m.get("scheme_code") in top_codes]
+    funds = top_funds
+    mom_by_code = {m.get("scheme_code"): m for m in momentum}
+
     # ── Ticker tape ───────────────────────────────────────────────
     ticker_items = ""
     for code, f in list(report.items())[:10]:
@@ -220,7 +241,7 @@ if "OVERVIEW" in page:
     neutrals.sort(key=lambda x: x.get("composite_score",0), reverse=True)
 
     k1,k2,k3,k4,k5 = st.columns(5)
-    k1.metric("Funds tracked",  len(funds))
+    k1.metric("Top Funds",  len(funds))
     k2.metric("Avg 5Y CAGR",    f"{avg5}%" if avg5 else "—",    delta="vs Nifty ~14%")
     k3.metric("BUY signals",    buys,                            delta="active now")
     k4.metric("Best Sharpe",    best.get("fund_name","")[:16],   delta=f"{best.get('risk',{}).get('sharpe_3y','—')}")
