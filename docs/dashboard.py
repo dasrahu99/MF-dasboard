@@ -50,6 +50,7 @@ PLOTLY = dict(
 # ── Paths ─────────────────────────────────────────────────────────
 REPORTS = Path(__file__).parent / "data" / "reports"
 LATEST_JSON   = REPORTS / "latest.json"
+TOP10_JSON    = REPORTS / "top10.json"
 MOMENTUM_JSON = REPORTS / "momentum_scores.json"
 BENCH_JSON    = REPORTS / "benchmark_analysis.json"
 DD_JSON       = REPORTS / "drawdown_analysis.json"
@@ -150,16 +151,12 @@ if "OVERVIEW" in page:
     funds = [v for v in report.values() if "error" not in v]
     mom_by_code = {m.get("scheme_code"): m for m in (momentum or [])}
 
-    # ── Sort funds for Top 10 ─────────────────────────────────────
-    top10_report = sorted(
-        [(k, v) for k, v in report.items() if "error" not in v],
-        key=lambda x: x[1].get("cagr", {}).get("5y") or -999,
-        reverse=True
-    )[:10]
+    # Load top10 for ticker and rankings (weighted rank)
+    top10 = load(TOP10_JSON) or report
 
     # ── Ticker tape ───────────────────────────────────────────────
     ticker_items = ""
-    for code, f in top10_report:
+    for code, f in list((top10 or report).items())[:10]:
         name  = f.get("fund_name", f.get("scheme_name",""))[:18]
         cagr1 = f.get("cagr",{}).get("1y")
         if cagr1 is None: continue
@@ -212,23 +209,25 @@ if "OVERVIEW" in page:
     left, right = st.columns([3,2], gap="large")
 
     with left:
-        st.markdown("### Top 10 Fund Rankings")
+        st.markdown("### Top 10 Funds")
+        st.caption("Ranked by weighted score: 5Y CAGR 40% · Sharpe 30% · Momentum 30%")
         rows = []
-        for code, f in top10_report:
+        for code, f in top10.items():
             if "error" in f: continue
             m = mom_by_code.get(code, {})
             rows.append({
                 "Fund":      f.get("fund_name", f.get("scheme_name",""))[:32],
+                "Category":  f.get("category",""),
                 "1Y%":       f.get("cagr",{}).get("1y"),
                 "3Y%":       f.get("cagr",{}).get("3y"),
                 "5Y%":       f.get("cagr",{}).get("5y"),
                 "Sharpe":    f.get("risk",{}).get("sharpe_3y"),
                 "DD%":       f.get("risk",{}).get("max_drawdown"),
                 "XIRR%":     f.get("sip_simulation",{}).get("xirr_pct"),
-                "Score":     m.get("composite_score"),
+                "Rank Score":f.get("weighted_rank_score"),
                 "Signal":    m.get("signal","—"),
             })
-        df = pd.DataFrame(rows)
+        df = pd.DataFrame(rows)  # already ranked by pipeline
         st.dataframe(df, use_container_width=True, hide_index=True,
                      column_config={
                         "Score": st.column_config.ProgressColumn("Score", min_value=0, max_value=100),
@@ -243,8 +242,7 @@ if "OVERVIEW" in page:
         cat_avgs = []
         for cat in cats:
             vals = [f.get("cagr",{}).get("5y") for f in funds
-                    if cat.lower() in f.get("fund_name", f.get("scheme_name", "")).lower() 
-                    and f.get("cagr",{}).get("5y")]
+                    if f.get("category","") == cat and f.get("cagr",{}).get("5y")]
             cat_avgs.append(round(sum(vals)/len(vals),1) if vals else 0)
 
         fig = go.Figure(go.Bar(
@@ -258,17 +256,16 @@ if "OVERVIEW" in page:
             textposition="outside",
             textfont=dict(family="DM Mono", size=10, color="#00e5ff"),
         ))
-        fig.update_layout(**{k:v for k,v in PLOTLY.items() if k not in ("xaxis","yaxis")},
-                          height=240,
+        fig.update_layout(**{k:v for k,v in PLOTLY.items() if k not in ("xaxis","yaxis")}, height=240,
                           yaxis=dict(autorange="reversed",
                                      **PLOTLY["yaxis"]),
                           xaxis=dict(title="5Y CAGR %", **PLOTLY["xaxis"]))
         st.plotly_chart(fig, use_container_width=True)
 
         # Risk vs Return bubble
-        st.markdown("### Risk · Return (Top 10)")
+        st.markdown("### Risk · Return")
         scatter_pts = []
-        for code, f in top10_report:
+        for code, f in report.items():
             if "error" in f: continue
             cagr5 = f.get("cagr",{}).get("5y")
             vol   = f.get("risk",{}).get("volatility_3y_ann")
@@ -295,8 +292,7 @@ if "OVERVIEW" in page:
                     showlegend=False,
                     hovertemplate=f"<b>{pt['name']}</b><br>CAGR: {pt['y']:.1f}%<br>Vol: {pt['x']:.1f}%<extra></extra>",
                 ))
-            fig2.update_layout(**{k:v for k,v in PLOTLY.items() if k not in ("xaxis","yaxis")},
-                               height=220,
+            fig2.update_layout(**{k:v for k,v in PLOTLY.items() if k not in ("xaxis","yaxis")}, height=220,
                                xaxis=dict(title="Volatility %", **PLOTLY["xaxis"]),
                                yaxis=dict(title="5Y CAGR %",    **PLOTLY["yaxis"]))
             st.plotly_chart(fig2, use_container_width=True)
@@ -755,8 +751,7 @@ elif "STEP-UP" in page:
             name="Invested", line=dict(color="#3d5a72", width=1),
             fill="tozeroy", fillcolor="rgba(61,90,114,0.08)",
         ))
-        fig.update_layout(**{k:v for k,v in PLOTLY.items() if k not in ("xaxis","yaxis")},
-                          height=360,
+        fig.update_layout(**PLOTLY, height=360,
                           legend=dict(orientation="h", y=1.05,
                                       font=dict(size=9)),
                           yaxis=dict(tickformat=",.0f", title="₹ Corpus",
