@@ -256,7 +256,7 @@ if "OVERVIEW" in page:
             textposition="outside",
             textfont=dict(family="DM Mono", size=10, color="#00e5ff"),
         ))
-        fig.update_layout(**{k:v for k,v in PLOTLY.items() if k not in ("xaxis","yaxis")}, height=240,
+        fig.update_layout(PLOTLY, height=240,
                           yaxis=dict(autorange="reversed",
                                      **PLOTLY["yaxis"]),
                           xaxis=dict(title="5Y CAGR %", **PLOTLY["xaxis"]))
@@ -292,7 +292,7 @@ if "OVERVIEW" in page:
                     showlegend=False,
                     hovertemplate=f"<b>{pt['name']}</b><br>CAGR: {pt['y']:.1f}%<br>Vol: {pt['x']:.1f}%<extra></extra>",
                 ))
-            fig2.update_layout(**{k:v for k,v in PLOTLY.items() if k not in ("xaxis","yaxis")}, height=220,
+            fig2.update_layout(PLOTLY, height=220,
                                xaxis=dict(title="Volatility %", **PLOTLY["xaxis"]),
                                yaxis=dict(title="5Y CAGR %",    **PLOTLY["yaxis"]))
             st.plotly_chart(fig2, use_container_width=True)
@@ -409,7 +409,7 @@ elif "MOMENTUM" in page:
         textposition="outside",
         textfont=dict(family="DM Mono", size=10, color="#7a9bb5"),
     ))
-    fig.update_layout(**{k:v for k,v in PLOTLY.items() if k not in ("xaxis","yaxis")},
+    fig.update_layout(PLOTLY,
                       height=max(320, len(names)*38),
                       xaxis=dict(range=[0,115], title="Composite Score", **PLOTLY["xaxis"]),
                       yaxis=dict(autorange="reversed", **PLOTLY["yaxis"]))
@@ -546,7 +546,7 @@ elif "PORTFOLIO" in page:
                 textfont=dict(family="DM Mono", size=10),
                 textinfo="label+percent",
             ))
-            fig.update_layout(**{k:v for k,v in PLOTLY.items() if k not in ("xaxis","yaxis")},
+            fig.update_layout(PLOTLY,
                               height=280, margin=dict(l=0,r=0,t=8,b=0),
                               showlegend=False)
             fig.add_annotation(text=f"<b>{len(cat_w)}</b><br>categories",
@@ -754,7 +754,7 @@ elif "STEP-UP" in page:
             name="Invested", line=dict(color="#3d5a72", width=1),
             fill="tozeroy", fillcolor="rgba(61,90,114,0.08)",
         ))
-        fig.update_layout(**PLOTLY, height=360,
+        fig.update_layout(PLOTLY, height=360,
                           legend=dict(orientation="h", y=1.05,
                                       font=dict(size=9)),
                           yaxis=dict(tickformat=",.0f", title="₹ Corpus",
