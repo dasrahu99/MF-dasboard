@@ -23,7 +23,7 @@ st.set_page_config(
 
 # ── Inject theme ──────────────────────────────────────────────────
 def load_css():
-    css_path = Path(__file__).parent / "theme.css"
+    css_path = Path("theme.css")
     if css_path.exists():
         with open(css_path) as f:
             raw = f.read()
@@ -99,6 +99,7 @@ with st.sidebar:
 
     page = st.radio("", [
         "⬡  OVERVIEW",
+        "◆  CONTRARIAN",
         "◈  MOMENTUM",
         "◉  PORTFOLIO",
         "⊕  BENCHMARK",
@@ -110,23 +111,8 @@ with st.sidebar:
     st.divider()
 
     if st.button("⟳  REFRESH", use_container_width=True):
-        with st.spinner("Running pipeline to fetch latest data..."):
-            import subprocess
-            import sys
-            import os
-            
-            script_dir = Path(__file__).parent
-            pipeline_path = script_dir / "pipeline.py"
-            
-            try:
-                result = subprocess.run(
-                    [sys.executable, str(pipeline_path)],
-                    capture_output=True, text=True, check=True
-                )
-                st.cache_data.clear()
-                st.rerun()
-            except subprocess.CalledProcessError as e:
-                st.error(f"Pipeline failed! Error:\n{e.stderr}\n\nOutput:\n{e.stdout}")
+        st.cache_data.clear()
+        st.rerun()
 
     st.markdown("""
     <div style="margin-top:1rem;">
@@ -159,60 +145,22 @@ if "OVERVIEW" in page:
     report = load(LATEST_JSON)
     momentum = load(MOMENTUM_JSON)
     if not report:
-        st.info("Data not found. Running the pipeline automatically for the first time... (This may take 2-3 minutes as it downloads 5-10 years of historical NAV data).")
-        with st.spinner("Fetching data from AMFI..."):
-            import subprocess
-            import sys
-            script_dir = Path(__file__).parent
-            try:
-                subprocess.run(
-                    [sys.executable, str(script_dir / "pipeline.py")],
-                    capture_output=True, text=True, check=True
-                )
-                st.rerun()
-            except subprocess.CalledProcessError as e:
-                st.error(f"Pipeline failed on startup! Error:\n{e.stderr}")
-                st.stop()
+        st.warning("Run `python pipeline.py` to generate data.")
+        st.stop()
 
     funds = [v for v in report.values() if "error" not in v]
     mom_by_code = {m.get("scheme_code"): m for m in (momentum or [])}
 
-    # ── KPI stats from ALL funds (before narrowing) ───────────────
-    all_funds = funds
-    all_momentum = momentum or []
-    avg5 = [f.get("cagr",{}).get("5y") for f in all_funds if f.get("cagr",{}).get("5y")]
-    avg5 = round(sum(avg5)/len(avg5),1) if avg5 else None
-    buys = sum(1 for m in all_momentum if m.get("signal") in ("BUY","STRONG BUY"))
-    best = max(all_funds, key=lambda f: f.get("risk",{}).get("sharpe_3y") or 0)
-    neutrals = [m for m in all_momentum if m.get("signal") in ("NEUTRAL","REDUCE")
-                and (m.get("composite_score") or 0) >= 20]
-    neutrals.sort(key=lambda x: x.get("composite_score",0), reverse=True)
-    total_analyzed = len(all_funds)
-
-    # ── Rank and keep only Top N funds for display ────────────────
-    TOP_N = 10
-
-    def _rank_score(f):
-        """Composite rank: 5Y CAGR (40%) + Sharpe (30%) + Momentum (30%)."""
-        c5 = f.get("cagr",{}).get("5y") or 0
-        sh = f.get("risk",{}).get("sharpe_3y") or 0
-        code = f.get("scheme_code", "")
-        ms = mom_by_code.get(code, {}).get("composite_score", 0) or 0
-        return c5 * 0.4 + sh * 10 * 0.3 + ms * 0.1 * 0.3   # normalised blend
-
-    funds.sort(key=_rank_score, reverse=True)
-    top_funds = funds[:TOP_N]
-    top_codes = {f.get("scheme_code", "") for f in top_funds}
-
-    # Narrow report & momentum to top N only (for charts/tables)
-    report = {k: v for k, v in report.items() if k in top_codes}
-    momentum = [m for m in all_momentum if m.get("scheme_code") in top_codes]
-    funds = top_funds
-    mom_by_code = {m.get("scheme_code"): m for m in momentum}
+    # ── Sort funds for Top 10 ─────────────────────────────────────
+    top10_report = sorted(
+        [(k, v) for k, v in report.items() if "error" not in v],
+        key=lambda x: x[1].get("cagr", {}).get("5y") or -999,
+        reverse=True
+    )[:10]
 
     # ── Ticker tape ───────────────────────────────────────────────
     ticker_items = ""
-    for code, f in list(report.items())[:10]:
+    for code, f in top10_report:
         name  = f.get("fund_name", f.get("scheme_name",""))[:18]
         cagr1 = f.get("cagr",{}).get("1y")
         if cagr1 is None: continue
@@ -243,9 +191,17 @@ if "OVERVIEW" in page:
     </div>
     """, unsafe_allow_html=True)
 
-    # ── KPI cards (using full-market stats) ───────────────────────
+    # ── KPI cards ─────────────────────────────────────────────────
+    avg5 = [f.get("cagr",{}).get("5y") for f in funds if f.get("cagr",{}).get("5y")]
+    avg5 = round(sum(avg5)/len(avg5),1) if avg5 else None
+    buys = sum(1 for m in (momentum or []) if m.get("signal") in ("BUY","STRONG BUY"))
+    best = max(funds, key=lambda f: f.get("risk",{}).get("sharpe_3y") or 0)
+    neutrals = [m for m in (momentum or []) if m.get("signal") in ("NEUTRAL","REDUCE")
+                and (m.get("composite_score") or 0) >= 35]
+    neutrals.sort(key=lambda x: x.get("composite_score",0), reverse=True)
+
     k1,k2,k3,k4,k5 = st.columns(5)
-    k1.metric("Funds Analyzed",  total_analyzed, delta=f"Top {TOP_N} shown")
+    k1.metric("Funds tracked",  len(funds))
     k2.metric("Avg 5Y CAGR",    f"{avg5}%" if avg5 else "—",    delta="vs Nifty ~14%")
     k3.metric("BUY signals",    buys,                            delta="active now")
     k4.metric("Best Sharpe",    best.get("fund_name","")[:16],   delta=f"{best.get('risk',{}).get('sharpe_3y','—')}")
@@ -257,9 +213,9 @@ if "OVERVIEW" in page:
     left, right = st.columns([3,2], gap="large")
 
     with left:
-        st.markdown("### Fund Rankings")
+        st.markdown("### Top 10 Fund Rankings")
         rows = []
-        for code, f in report.items():
+        for code, f in top10_report:
             if "error" in f: continue
             m = mom_by_code.get(code, {})
             rows.append({
@@ -273,10 +229,10 @@ if "OVERVIEW" in page:
                 "Score":     m.get("composite_score"),
                 "Signal":    m.get("signal","—"),
             })
-        df = pd.DataFrame(rows).sort_values("5Y%", ascending=False)
+        df = pd.DataFrame(rows)
         st.dataframe(df, use_container_width=True, hide_index=True,
                      column_config={
-                        "Score": st.column_config.ProgressColumn("Score", min_value=0, max_value=100, format="%.0f"),
+                        "Score": st.column_config.ProgressColumn("Score", min_value=0, max_value=100),
                         "5Y%":   st.column_config.NumberColumn("5Y%", format="%.1f%%"),
                         "3Y%":   st.column_config.NumberColumn("3Y%", format="%.1f%%"),
                         "1Y%":   st.column_config.NumberColumn("1Y%", format="%.1f%%"),
@@ -284,13 +240,11 @@ if "OVERVIEW" in page:
 
     with right:
         st.markdown("### Category CAGR")
-        categories_map = {"Large Cap":"Large Cap", "Mid Cap":"Mid Cap", "Small Cap":"Small Cap", "Flexi Cap":"Flexi", "ELSS":"ELSS", "Index":"Index"}
-        cats = list(categories_map.keys())
+        cats = ["Large Cap","Mid Cap","Small Cap","Flexi Cap","ELSS","Index"]
         cat_avgs = []
-        for cat, keyword in categories_map.items():
+        for cat in cats:
             vals = [f.get("cagr",{}).get("5y") for f in funds
-                    if (cat == f.get("category","") or keyword in f.get("fund_name", f.get("scheme_name", "")))
-                    and f.get("cagr",{}).get("5y")]
+                    if f.get("category","") == cat and f.get("cagr",{}).get("5y")]
             cat_avgs.append(round(sum(vals)/len(vals),1) if vals else 0)
 
         fig = go.Figure(go.Bar(
@@ -304,16 +258,16 @@ if "OVERVIEW" in page:
             textposition="outside",
             textfont=dict(family="DM Mono", size=10, color="#00e5ff"),
         ))
-        fig.update_layout(**{k:v for k,v in PLOTLY.items() if k not in ("xaxis","yaxis")}, height=240,
+        fig.update_layout(**PLOTLY, height=240,
                           yaxis=dict(autorange="reversed",
                                      **PLOTLY["yaxis"]),
                           xaxis=dict(title="5Y CAGR %", **PLOTLY["xaxis"]))
         st.plotly_chart(fig, use_container_width=True)
 
         # Risk vs Return bubble
-        st.markdown("### Risk · Return")
+        st.markdown("### Risk · Return (Top 10)")
         scatter_pts = []
-        for code, f in report.items():
+        for code, f in top10_report:
             if "error" in f: continue
             cagr5 = f.get("cagr",{}).get("5y")
             vol   = f.get("risk",{}).get("volatility_3y_ann")
@@ -330,14 +284,17 @@ if "OVERVIEW" in page:
             for pt in scatter_pts:
                 fig2.add_trace(go.Scatter(
                     x=[pt["x"]], y=[pt["y"]],
-                    mode="markers",
+                    mode="markers+text",
+                    text=[pt["name"]],
+                    textposition="top center",
+                    textfont=dict(size=8, color="#3d5a72"),
                     marker=dict(size=pt["size"], color="#00e5ff",
                                 line=dict(color="#162338", width=1),
                                 opacity=0.8),
                     showlegend=False,
                     hovertemplate=f"<b>{pt['name']}</b><br>CAGR: {pt['y']:.1f}%<br>Vol: {pt['x']:.1f}%<extra></extra>",
                 ))
-            fig2.update_layout(**{k:v for k,v in PLOTLY.items() if k not in ("xaxis","yaxis")}, height=220,
+            fig2.update_layout(**PLOTLY, height=220,
                                xaxis=dict(title="Volatility %", **PLOTLY["xaxis"]),
                                yaxis=dict(title="5Y CAGR %",    **PLOTLY["yaxis"]))
             st.plotly_chart(fig2, use_container_width=True)
@@ -357,89 +314,60 @@ if "OVERVIEW" in page:
     if not top3:
         st.info("No NEUTRAL funds found — run `python momentum.py` to refresh.")
     else:
-        # Render each card in its own st.columns slot to avoid HTML size limits
-        wl_cols = st.columns(len(top3))
-        for wl_col, m in zip(wl_cols, top3):
+        cols = st.columns(3)
+        for col, m in zip(cols, top3):
             score  = m.get("composite_score", 0)
+            sig    = m.get("signal","")
             fa     = m.get("factors", {})
             tr     = fa.get("trailing_returns", {})
             accel  = fa.get("acceleration_pct")
             gap    = round(60 - score, 1)
-            pct    = max(0, min(100, int((score / 60) * 100)))
+            prog   = max(0.0, min(1.0, (score - 35) / 25))
 
+            # find full fund data
             code   = m.get("scheme_code","")
             f      = report.get(code, {})
-            name   = f.get("fund_name", m.get("scheme_name",""))[:28]
+            name   = f.get("fund_name", m.get("scheme_name",""))[:26]
             cagr5  = f.get("cagr",{}).get("5y")
             sharpe = f.get("risk",{}).get("sharpe_3y")
 
-            r1m = tr.get("1m_pct")
-            r3m = tr.get("3m_pct")
-            r1m_s = f"{r1m:+.1f}%" if r1m is not None else "—"
-            r3m_s = f"{r3m:+.1f}%" if r3m is not None else "—"
-            r1m_col = "#00e5ff" if r1m and r1m > 0 else "#ff4060" if r1m and r1m < 0 else "#7a9bb5"
-            r3m_col = "#00e5ff" if r3m and r3m > 0 else "#ff4060" if r3m and r3m < 0 else "#7a9bb5"
+            with col:
+                with st.container(border=True):
+                    st.markdown(
+                        f'<div style="font-family:Syne,sans-serif;font-weight:700;'
+                        f'font-size:14px;color:#e8f4f8;margin-bottom:4px;">{name}</div>'
+                        f'<div style="font-family:DM Mono,monospace;font-size:9px;'
+                        f'color:#3d5a72;text-transform:uppercase;letter-spacing:0.08em;">'
+                        f'{f.get("category","")}'
+                        f'{"  ·  5Y: "+str(cagr5)+"%" if cagr5 else ""}</div>',
+                        unsafe_allow_html=True
+                    )
+                    st.markdown('<div style="height:8px"></div>', unsafe_allow_html=True)
 
-            arc_col = "#00e5ff" if gap <= 5 else "#ffb300" if gap <= 15 else "#ff4060"
+                    c1,c2 = st.columns(2)
+                    c1.metric("Score",    f"{score:.0f} / 100")
+                    c2.metric("To BUY",   f"{gap:.1f} pts", delta="need ≥60", delta_color="off")
 
-            # Acceleration line
-            accel_line = ""
-            if accel is not None:
-                a_icon = "▲" if accel > 0 else "▼"
-                a_col  = "#00ff88" if accel > 0 else "#ff4060"
-                accel_line = f'<div style="margin-top:10px;padding:4px 8px;border-radius:6px;background:rgba(0,0,0,0.3);font-size:10px;color:{a_col};text-align:center;">{a_icon} {abs(accel):.1f}% momentum</div>'
+                    st.progress(prog, text=f"{'█'*int(prog*10)}{'░'*(10-int(prog*10))}  {score:.0f}→60")
 
-            # Weakest factors line
-            fs = m.get("factor_scores",{})
-            weak_line = ""
-            if fs:
-                weak = sorted(fs.items(), key=lambda x: x[1])[:2]
-                weak_line = '<div style="margin-top:6px;font-size:9px;color:#3d5a72;font-family:DM Mono,monospace;">' + " · ".join(f"{k.replace('_',' ').title()} {v*100:.0f}" for k,v in weak) + '</div>'
+                    t1,t2 = st.columns(2)
+                    r1m = tr.get("1m_pct")
+                    r3m = tr.get("3m_pct")
+                    t1.metric("1M", f"{r1m:+.1f}%" if r1m is not None else "—")
+                    t2.metric("3M", f"{r3m:+.1f}%" if r3m is not None else "—")
 
-            # Sharpe line
-            sharpe_line = ""
-            if sharpe and str(sharpe).lower() != "nan":
-                sharpe_line = f'<div style="font-size:9px;color:#3d5a72;margin-top:2px;font-family:DM Mono,monospace;">Sharpe 3Y: {sharpe:.2f}</div>'
+                    if accel is not None:
+                        arrow = "▲" if accel > 0 else "▼"
+                        msg   = f"{arrow} {abs(accel):.1f}% momentum acceleration"
+                        if accel > 0: st.success(msg)
+                        else:         st.warning(msg)
 
-            # SVG ring — compact
-            ring = (
-                f'<svg width="64" height="64" viewBox="0 0 64 64">'
-                f'<circle cx="32" cy="32" r="27" fill="none" stroke="#162338" stroke-width="4"/>'
-                f'<circle cx="32" cy="32" r="27" fill="none" stroke="{arc_col}" stroke-width="4" '
-                f'stroke-dasharray="{pct * 1.696} {169.6 - pct * 1.696}" '
-                f'stroke-dashoffset="42.4" stroke-linecap="round"/>'
-                f'<text x="32" y="30" text-anchor="middle" fill="#e8f4f8" '
-                f'font-family="Syne,sans-serif" font-size="16" font-weight="800">{score:.0f}</text>'
-                f'<text x="32" y="42" text-anchor="middle" fill="#3d5a72" '
-                f'font-family="DM Mono,monospace" font-size="7">/60</text>'
-                f'</svg>'
-            )
-
-            card = f'''<div style="background:linear-gradient(145deg,#0a1628,#0d1b2a);border:1px solid rgba(0,229,255,0.08);border-radius:12px;padding:16px;position:relative;">
-<div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,{arc_col},transparent);"></div>
-<div style="font-family:Syne,sans-serif;font-weight:700;font-size:14px;color:#e8f4f8;margin-bottom:2px;">{name}</div>
-<div style="font-family:DM Mono,monospace;font-size:9px;color:#3d5a72;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px;">{"5Y: "+str(cagr5)+"%" if cagr5 else "—"}</div>
-<div style="display:flex;align-items:center;gap:14px;">
-<div>{ring}</div>
-<div style="flex:1;">
-<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;">
-<span style="font-family:DM Mono,monospace;font-size:9px;color:#7a9bb5;">GAP</span>
-<span style="font-family:Syne,sans-serif;font-weight:700;font-size:13px;color:{arc_col};">{gap:.1f} pts</span>
-</div>
-<div style="width:100%;height:3px;background:#162338;border-radius:2px;overflow:hidden;margin-bottom:8px;">
-<div style="width:{pct}%;height:100%;background:{arc_col};border-radius:2px;"></div>
-</div>
-<div style="display:flex;gap:14px;">
-<div><div style="font-size:8px;color:#3d5a72;font-family:DM Mono,monospace;">1M</div><div style="font-size:13px;font-weight:700;color:{r1m_col};font-family:Syne,sans-serif;">{r1m_s}</div></div>
-<div><div style="font-size:8px;color:#3d5a72;font-family:DM Mono,monospace;">3M</div><div style="font-size:13px;font-weight:700;color:{r3m_col};font-family:Syne,sans-serif;">{r3m_s}</div></div>
-</div>
-</div>
-</div>
-{accel_line}{weak_line}{sharpe_line}
-</div>'''
-
-            with wl_col:
-                st.markdown(card, unsafe_allow_html=True)
+                    fs = m.get("factor_scores",{})
+                    if fs:
+                        weak = sorted(fs.items(), key=lambda x: x[1])[:2]
+                        st.caption("Weakest: " + ", ".join(f"{k}({v*100:.0f})" for k,v in weak))
+                    if sharpe:
+                        st.caption(f"Sharpe 3Y: {sharpe:.2f}")
 
 
 # ════════════════════════════════════════════════════════════════════
@@ -480,7 +408,7 @@ elif "MOMENTUM" in page:
         textposition="outside",
         textfont=dict(family="DM Mono", size=10, color="#7a9bb5"),
     ))
-    fig.update_layout(**{k:v for k,v in PLOTLY.items() if k not in ("xaxis","yaxis")},
+    fig.update_layout(**PLOTLY,
                       height=max(320, len(names)*38),
                       xaxis=dict(range=[0,115], title="Composite Score", **PLOTLY["xaxis"]),
                       yaxis=dict(autorange="reversed", **PLOTLY["yaxis"]))
@@ -617,7 +545,7 @@ elif "PORTFOLIO" in page:
                 textfont=dict(family="DM Mono", size=10),
                 textinfo="label+percent",
             ))
-            fig.update_layout(**{k:v for k,v in PLOTLY.items() if k not in ("xaxis","yaxis","margin")},
+            fig.update_layout(**{k:v for k,v in PLOTLY.items() if k not in ("xaxis","yaxis")},
                               height=280, margin=dict(l=0,r=0,t=8,b=0),
                               showlegend=False)
             fig.add_annotation(text=f"<b>{len(cat_w)}</b><br>categories",
@@ -825,7 +753,7 @@ elif "STEP-UP" in page:
             name="Invested", line=dict(color="#3d5a72", width=1),
             fill="tozeroy", fillcolor="rgba(61,90,114,0.08)",
         ))
-        fig.update_layout(**{k:v for k,v in PLOTLY.items() if k not in ("xaxis","yaxis")}, height=360,
+        fig.update_layout(**PLOTLY, height=360,
                           legend=dict(orientation="h", y=1.05,
                                       font=dict(size=9)),
                           yaxis=dict(tickformat=",.0f", title="₹ Corpus",
@@ -924,3 +852,237 @@ elif "TAX" in page:
                f"80C saved: {inr(comp['elss']['80c_tax_saved'])}")
     r2.metric("Regular EQ",  inr(comp["regular_equity"]["net_corpus"]))
     r3.metric("ELSS edge",   inr(comp["elss_advantage_rs"]), comp["verdict"])
+
+
+# ════════════════════════════════════════════════════════════════════
+# CONTRARIAN INTELLIGENCE — NEW PAGE
+# ════════════════════════════════════════════════════════════════════
+# NOTE: Add "◆  CONTRARIAN" to the pages list in the sidebar section above
+
+# ════════════════════════════════════════════════════════════════════
+# CONTRARIAN INTELLIGENCE PAGE
+# ════════════════════════════════════════════════════════════════════
+elif "CONTRARIAN" in page:
+
+    CONTRARIAN_JSON = REPORTS_DIR / "contrarian_analysis.json"
+    contrarian = load(CONTRARIAN_JSON)
+
+    st.markdown("<h1>Contrarian Intelligence</h1>", unsafe_allow_html=True)
+    st.markdown(
+        '<p style="font-family:DM Mono,monospace;font-size:10px;color:#3d5a72;'
+        'text-transform:uppercase;letter-spacing:0.1em;">'
+        'Best funds to invest when market is down · quality + valuation + regime analysis</p>',
+        unsafe_allow_html=True
+    )
+
+    if not contrarian:
+        st.info("Run `python contrarian.py` to generate contrarian analysis.")
+        st.stop()
+
+    market  = contrarian.get("market_regime", {})
+    signals = contrarian.get("fund_signals", [])
+    deploy  = contrarian.get("deployment_strategy", {})
+    regime  = market.get("regime", "UNKNOWN")
+    opp     = market.get("opportunity_level", "LOW")
+    panic   = market.get("panic_zone", False)
+
+    # ── Market regime banner ──────────────────────────────────────
+    regime_colors = {
+        "BEAR":       ("#ff4060", "rgba(255,64,96,0.08)",  "rgba(255,64,96,0.3)"),
+        "CORRECTION": ("#ffb300", "rgba(255,179,0,0.08)",  "rgba(255,179,0,0.3)"),
+        "PULLBACK":   ("#ffb300", "rgba(255,179,0,0.06)",  "rgba(255,179,0,0.2)"),
+        "SIDEWAYS":   ("#7a9bb5", "rgba(122,155,181,0.06)","rgba(122,155,181,0.2)"),
+        "BULL":       ("#00ff88", "rgba(0,255,136,0.06)",  "rgba(0,255,136,0.2)"),
+    }
+    rc, rbg, rborder = regime_colors.get(regime, ("#00e5ff","rgba(0,229,255,0.06)","rgba(0,229,255,0.2)"))
+
+    opp_label = {
+        "VERY HIGH": "🔥 MAXIMUM OPPORTUNITY",
+        "HIGH":      "⚡ HIGH OPPORTUNITY",
+        "MODERATE":  "◎ MODERATE OPPORTUNITY",
+        "LOW":       "○ LOW OPPORTUNITY",
+    }.get(opp, opp)
+
+    st.markdown(f"""
+    <div style="background:{rbg};border:1px solid {rborder};border-radius:8px;
+                padding:1.2rem 1.6rem;margin-bottom:1.5rem;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:0;left:0;right:0;height:2px;
+                  background:linear-gradient(90deg,transparent,{rc},transparent);"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+        <div>
+          <div style="font-family:DM Mono,monospace;font-size:9px;color:#3d5a72;
+                      text-transform:uppercase;letter-spacing:0.12em;margin-bottom:4px;">
+            MARKET REGIME
+          </div>
+          <div style="font-family:Syne,sans-serif;font-weight:800;font-size:1.8rem;color:{rc};">
+            {regime}{"  🚨 PANIC ZONE" if panic else ""}
+          </div>
+          <div style="font-family:DM Mono,monospace;font-size:11px;color:#7a9bb5;margin-top:4px;">
+            {market.get("regime_desc","")}
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-family:DM Mono,monospace;font-size:9px;color:#3d5a72;
+                      text-transform:uppercase;letter-spacing:0.1em;">OPPORTUNITY LEVEL</div>
+          <div style="font-family:Syne,sans-serif;font-weight:700;font-size:1.2rem;color:{rc};
+                      margin-top:4px;">{opp_label}</div>
+        </div>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ── Market metrics ────────────────────────────────────────────
+    m1,m2,m3,m4,m5 = st.columns(5)
+    m1.metric("Nifty from ATH",    f"{market.get('pct_from_ath',0):+.1f}%")
+    m2.metric("From 52W High",     f"{market.get('pct_from_52w_high',0):+.1f}%")
+    m3.metric("Nifty RSI(14)",     market.get("rsi_14","—"),
+               delta="Panic < 35" if (market.get("rsi_14") or 50) < 35 else "Normal")
+    m4.metric("MA Trend",          market.get("trend","—"))
+    m5.metric("3M Return",         f"{market.get('returns',{}).get('3m_pct',0):+.1f}%")
+
+    st.divider()
+
+    # ── Deployment strategy ───────────────────────────────────────
+    if deploy.get("strategy_type") == "CONTRARIAN DEPLOYMENT":
+        st.markdown("### 💰 Recommended Deployment Right Now")
+
+        da, db, dc = st.columns(3)
+        da.metric("Deploy Amount",    f"₹{deploy.get('total_deploy',0):,.0f}",
+                   delta=f"{deploy.get('deploy_multiplier',1)}x your normal SIP")
+        db.metric("Strategy",         deploy.get("strategy_type",""))
+        dc.metric("Funds to buy",     len(deploy.get("allocations",[])))
+
+        st.markdown(f"""
+        <div style="background:rgba(0,229,255,0.04);border:1px solid rgba(0,229,255,0.15);
+                    border-radius:6px;padding:1rem 1.2rem;margin:0.8rem 0;
+                    font-family:DM Mono,monospace;font-size:11px;color:#7a9bb5;line-height:1.7;">
+          📊 {deploy.get("historical_note","")}
+        </div>
+        """, unsafe_allow_html=True)
+
+        # Allocation cards
+        allocs = deploy.get("allocations",[])
+        if allocs:
+            a_cols = st.columns(len(allocs))
+            for col, a in zip(a_cols, allocs):
+                with col:
+                    with st.container(border=True):
+                        sig_color = {"CONTRARIAN BUY":"#00e5ff","ACCUMULATE":"#00ff88",
+                                      "VALUE ZONE":"#ffb300"}.get(a["signal"],"#7a9bb5")
+                        st.markdown(
+                            f'<div style="font-family:DM Mono,monospace;font-size:9px;'
+                            f'text-transform:uppercase;letter-spacing:0.1em;color:{sig_color};">'
+                            f'{a["signal"]}</div>'
+                            f'<div style="font-family:Syne,sans-serif;font-weight:700;'
+                            f'font-size:13px;color:#e8f4f8;margin:4px 0;">'
+                            f'{a["fund"][:26]}</div>',
+                            unsafe_allow_html=True
+                        )
+                        st.metric("Deploy",   f"₹{a['deploy_amount']:,.0f}")
+                        st.metric("Alloc%",   f"{a['allocation_pct']:.0f}%")
+                        st.caption(f"Quality: {a['quality_grade']}")
+                        st.caption(f"Val: {a['valuation_zone']}")
+                        st.caption(a["strategy"][:80])
+    else:
+        st.info(deploy.get("market_assessment",""))
+
+    st.divider()
+
+    # ── Full fund signal table ────────────────────────────────────
+    st.markdown("### All Funds — Contrarian Scores")
+    sig_rows = []
+    for s in signals:
+        sig_rows.append({
+            "Fund":          s.get("scheme_name","")[:28],
+            "Signal":        s.get("signal",""),
+            "Score":         s.get("contrarian_score"),
+            "Quality":       s.get("quality_grade",""),
+            "Valuation":     s.get("valuation_zone",""),
+            "Val %ile":      s.get("valuation_percentile"),
+            "Multiplier":    s.get("lump_sum_multiplier"),
+            "From Peak%":    s.get("pct_from_market_peak"),
+        })
+    df = pd.DataFrame(sig_rows)
+    st.dataframe(df, use_container_width=True, hide_index=True,
+                 column_config={
+                    "Score": st.column_config.ProgressColumn("Score", min_value=0, max_value=100),
+                    "Val %ile": st.column_config.NumberColumn("Val %ile", format="%.0f"),
+                 })
+
+    st.divider()
+
+    # ── Deep dive ─────────────────────────────────────────────────
+    st.markdown("### Fund Deep Dive")
+    fund_names = [s.get("scheme_name","") for s in signals]
+    sel_name   = st.selectbox("Select fund", fund_names, label_visibility="collapsed")
+    sel        = next((s for s in signals if s.get("scheme_name")==sel_name), {})
+
+    if sel:
+        sig_color_map = {
+            "CONTRARIAN BUY": "#00e5ff",
+            "ACCUMULATE":     "#00ff88",
+            "VALUE ZONE":     "#ffb300",
+            "WAIT FOR BOTTOM":"#ffb300",
+            "AVOID":          "#ff4060",
+            "SIP ONLY":       "#7a9bb5",
+            "REVIEW":         "#7a9bb5",
+        }
+        sc = sig_color_map.get(sel.get("signal",""), "#7a9bb5")
+
+        st.markdown(f"""
+        <div style="background:rgba(0,0,0,0.2);border:1px solid {sc}33;
+                    border-radius:8px;padding:1.2rem 1.6rem;margin-bottom:1rem;">
+          <div style="font-family:DM Mono,monospace;font-size:9px;color:#3d5a72;
+                      text-transform:uppercase;letter-spacing:0.1em;">SIGNAL</div>
+          <div style="font-family:Syne,sans-serif;font-weight:800;font-size:1.5rem;
+                      color:{sc};margin:4px 0;">{sel.get("signal","")}</div>
+          <div style="font-family:DM Mono,monospace;font-size:12px;color:#7a9bb5;">
+            {sel.get("action","")}
+          </div>
+          <div style="margin-top:10px;padding:10px 12px;
+                      background:{sc}0d;border-left:2px solid {sc};
+                      font-family:DM Mono,monospace;font-size:11px;color:#e8f4f8;">
+            💡 {sel.get("strategy","")}
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        d1,d2,d3,d4 = st.columns(4)
+        d1.metric("Contrarian Score", sel.get("contrarian_score"))
+        d2.metric("Quality Score",    f"{sel.get('quality_score',0):.0f} / 100")
+        d3.metric("Val Percentile",   f"{sel.get('valuation_percentile',50):.0f}th")
+        d4.metric("Lump Sum Multi",   f"{sel.get('lump_sum_multiplier',1)}x")
+
+        # Quality breakdown
+        qd = sel.get("quality_details",{})
+        if qd:
+            st.markdown("#### Quality Factor Breakdown")
+            q_cols = st.columns(len(qd))
+            for col, (factor, data) in zip(q_cols, qd.items()):
+                pts = data.get("points",0)
+                mx  = data.get("max",20)
+                col.metric(
+                    factor.replace("_"," ").title(),
+                    f"{pts}/{mx}",
+                    delta=f"{round(pts/mx*100)}%",
+                    delta_color="normal"
+                )
+
+        # Valuation details
+        vd = sel.get("valuation_details",{})
+        if vd:
+            st.markdown("#### Valuation Zone")
+            v1,v2,v3,v4 = st.columns(4)
+            v1.metric("Zone",         vd.get("zone",""))
+            v2.metric("3Y Min NAV",   f"₹{vd.get('3y_nav_min','—')}")
+            v3.metric("Current NAV",  f"₹{vd.get('current_nav','—')}")
+            v4.metric("3Y Max NAV",   f"₹{vd.get('3y_nav_max','—')}")
+            st.caption(vd.get("description",""))
+
+            # NAV range bar
+            nav_min = vd.get("3y_nav_min",0)
+            nav_max = vd.get("3y_nav_max",1)
+            nav_cur = vd.get("current_nav",0)
+            if nav_max > nav_min:
+                prog = max(0.0, min(1.0, (nav_cur - nav_min) / (nav_max - nav_min)))
+                st.progress(prog, text=f"NAV position: ₹{nav_min} ←  ₹{nav_cur}  → ₹{nav_max}")
