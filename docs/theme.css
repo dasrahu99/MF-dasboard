@@ -1,0 +1,518 @@
+/* 
+   theme.css — Quantum Dark Theme
+   Inject via: st.markdown(open('theme.css').read(), unsafe_allow_html=True)
+   Aesthetic: deep-space dark + electric cyan + sharp amber accents
+   Typography: Syne (display) + DM Mono (data)
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Outfit:wght@300;400;500&display=swap');
+
+:root {
+    --bg-void: #030508;
+    --bg-deep: #070c12;
+    --bg-surface: #0d1520;
+    --bg-raised: #111d2e;
+    --bg-hover: #162338;
+
+    --cyan: #00e5ff;
+    --cyan-dim: #00b8cc;
+    --cyan-glow: rgba(0, 229, 255, 0.15);
+    --cyan-border: rgba(0, 229, 255, 0.25);
+
+    --amber: #ffb300;
+    --amber-dim: #cc8f00;
+    --amber-glow: rgba(255, 179, 0, 0.12);
+
+    --green: #00ff88;
+    --green-dim: #00cc6e;
+    --red: #ff4060;
+    --red-dim: #cc3350;
+
+    --text-primary: #e8f4f8;
+    --text-secondary: #7a9bb5;
+    --text-muted: #3d5a72;
+    --text-data: #00e5ff;
+
+    --grid-line: rgba(0, 229, 255, 0.06);
+    --border: rgba(0, 229, 255, 0.12);
+    --border-bright: rgba(0, 229, 255, 0.35);
+}
+
+/* ── Base resets ── */
+html,
+body,
+[data-testid="stAppViewContainer"] {
+    background: var(--bg-void) !important;
+    color: var(--text-primary) !important;
+    font-family: 'Outfit', sans-serif !important;
+}
+
+/* Scanline grid overlay */
+[data-testid="stAppViewContainer"]::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+        linear-gradient(var(--grid-line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ── Sidebar ── */
+[data-testid="stSidebar"] {
+    background: var(--bg-deep) !important;
+    border-right: 1px solid var(--border) !important;
+    box-shadow: 4px 0 40px rgba(0, 0, 0, 0.6) !important;
+}
+
+[data-testid="stSidebar"] .stRadio label {
+    font-family: 'DM Mono', monospace !important;
+    font-size: 12px !important;
+    color: var(--text-secondary) !important;
+    letter-spacing: 0.08em !important;
+    text-transform: uppercase !important;
+    padding: 8px 12px !important;
+    border-radius: 4px !important;
+    transition: all 0.2s ease !important;
+    border-left: 2px solid transparent !important;
+}
+
+[data-testid="stSidebar"] .stRadio label:hover {
+    color: var(--cyan) !important;
+    border-left-color: var(--cyan) !important;
+    background: var(--cyan-glow) !important;
+}
+
+/* ── Typography ── */
+h1 {
+    font-family: 'Syne', sans-serif !important;
+    font-weight: 800 !important;
+    font-size: 2.4rem !important;
+    letter-spacing: -0.02em !important;
+    color: var(--text-primary) !important;
+    background: linear-gradient(135deg, #e8f4f8 30%, var(--cyan)) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+}
+
+h2,
+h3 {
+    font-family: 'Syne', sans-serif !important;
+    font-weight: 700 !important;
+    color: var(--text-primary) !important;
+    letter-spacing: -0.01em !important;
+}
+
+/* Caption / subtext */
+.stCaption,
+[data-testid="stCaptionContainer"] {
+    font-family: 'DM Mono', monospace !important;
+    font-size: 11px !important;
+    color: var(--text-muted) !important;
+    letter-spacing: 0.06em !important;
+    text-transform: uppercase !important;
+}
+
+/* ── Metric cards ── */
+[data-testid="stMetric"] {
+    background: var(--bg-surface) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 8px !important;
+    padding: 1.2rem 1.4rem !important;
+    position: relative !important;
+    overflow: hidden !important;
+    transition: border-color 0.3s, box-shadow 0.3s !important;
+}
+
+[data-testid="stMetric"]::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+}
+
+[data-testid="stMetric"]:hover {
+    border-color: var(--cyan-border) !important;
+    box-shadow: 0 0 30px var(--cyan-glow) !important;
+}
+
+[data-testid="stMetricLabel"] {
+    font-family: 'DM Mono', monospace !important;
+    font-size: 10px !important;
+    font-weight: 500 !important;
+    color: var(--text-muted) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.1em !important;
+}
+
+[data-testid="stMetricValue"] {
+    font-family: 'Syne', sans-serif !important;
+    font-weight: 700 !important;
+    font-size: 1.7rem !important;
+    color: var(--cyan) !important;
+}
+
+[data-testid="stMetricDelta"] {
+    font-family: 'DM Mono', monospace !important;
+    font-size: 11px !important;
+}
+
+/* ── Dataframe / tables ── */
+[data-testid="stDataFrame"] {
+    border: 1px solid var(--border) !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+}
+
+[data-testid="stDataFrame"] thead tr th {
+    background: var(--bg-raised) !important;
+    font-family: 'DM Mono', monospace !important;
+    font-size: 10px !important;
+    font-weight: 500 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.1em !important;
+    color: var(--text-muted) !important;
+    border-bottom: 1px solid var(--border) !important;
+}
+
+[data-testid="stDataFrame"] tbody tr td {
+    font-family: 'DM Mono', monospace !important;
+    font-size: 12px !important;
+    color: var(--text-primary) !important;
+    border-bottom: 1px solid var(--grid-line) !important;
+}
+
+[data-testid="stDataFrame"] tbody tr:hover td {
+    background: var(--bg-hover) !important;
+}
+
+/* ── Buttons ── */
+.stButton>button {
+    font-family: 'DM Mono', monospace !important;
+    font-size: 11px !important;
+    font-weight: 500 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.12em !important;
+    background: transparent !important;
+    color: var(--cyan) !important;
+    border: 1px solid var(--cyan-border) !important;
+    border-radius: 4px !important;
+    padding: 8px 20px !important;
+    transition: all 0.2s ease !important;
+}
+
+.stButton>button:hover {
+    background: var(--cyan-glow) !important;
+    border-color: var(--cyan) !important;
+    box-shadow: 0 0 20px var(--cyan-glow) !important;
+}
+
+/* ── Sliders ── */
+.stSlider [data-baseweb="slider"] {
+    padding: 4px 0 !important;
+}
+
+.stSlider [data-baseweb="slider"] [role="slider"] {
+    background: var(--cyan) !important;
+    border: 2px solid var(--bg-void) !important;
+    box-shadow: 0 0 12px var(--cyan-glow) !important;
+}
+
+/* Track */
+.stSlider [data-baseweb="slider"] div[data-testid="stSlider"] {
+    background: var(--border) !important;
+}
+
+/* ── Select boxes ── */
+[data-baseweb="select"] {
+    background: var(--bg-surface) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 4px !important;
+    font-family: 'DM Mono', monospace !important;
+    font-size: 12px !important;
+}
+
+/* ── Expanders ── */
+.streamlit-expanderHeader {
+    font-family: 'DM Mono', monospace !important;
+    font-size: 11px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.08em !important;
+    color: var(--text-secondary) !important;
+    background: var(--bg-surface) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 4px !important;
+}
+
+/* ── Info / warning / success boxes ── */
+.stInfo {
+    background: rgba(0, 229, 255, 0.05) !important;
+    border: 1px solid var(--cyan-border) !important;
+    border-radius: 4px !important;
+    font-family: 'DM Mono', monospace !important;
+    font-size: 12px !important;
+    color: var(--cyan-dim) !important;
+}
+
+.stWarning {
+    background: var(--amber-glow) !important;
+    border: 1px solid rgba(255, 179, 0, 0.3) !important;
+    border-radius: 4px !important;
+    color: var(--amber) !important;
+}
+
+.stSuccess {
+    background: rgba(0, 255, 136, 0.05) !important;
+    border: 1px solid rgba(0, 255, 136, 0.25) !important;
+    border-radius: 4px !important;
+    color: var(--green-dim) !important;
+}
+
+/* ── Progress bars ── */
+.stProgress>div>div {
+    background: var(--bg-raised) !important;
+    border-radius: 2px !important;
+}
+
+.stProgress>div>div>div {
+    background: linear-gradient(90deg, var(--cyan-dim), var(--cyan)) !important;
+    box-shadow: 0 0 10px var(--cyan-glow) !important;
+    border-radius: 2px !important;
+}
+
+/* ── Dividers ── */
+hr {
+    border: none !important;
+    border-top: 1px solid var(--border) !important;
+    margin: 1.5rem 0 !important;
+}
+
+/* ── Number inputs ── */
+input[type="number"],
+input[type="text"] {
+    background: var(--bg-surface) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 4px !important;
+    color: var(--text-primary) !important;
+    font-family: 'DM Mono', monospace !important;
+    font-size: 13px !important;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-void);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--cyan-border);
+}
+
+/* ── Containers with border ── */
+[data-testid="stVerticalBlockBorderWrapper"] {
+    background: var(--bg-surface) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 8px !important;
+    padding: 1.2rem !important;
+    transition: border-color 0.3s, box-shadow 0.3s !important;
+}
+
+[data-testid="stVerticalBlockBorderWrapper"]:hover {
+    border-color: var(--cyan-border) !important;
+    box-shadow: 0 0 24px var(--cyan-glow) !important;
+}
+
+/* ── Plotly chart backgrounds ── */
+.js-plotly-plot .plotly .bg {
+    fill: transparent !important;
+}
+
+/* ── Sidebar title ── */
+[data-testid="stSidebar"] h1 {
+    font-family: 'Syne', sans-serif !important;
+    font-size: 1.1rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.15em !important;
+    text-transform: uppercase !important;
+    background: linear-gradient(135deg, var(--text-primary), var(--cyan)) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+}
+
+/* ── Page load animation ── */
+@keyframes fadeSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+[data-testid="stVerticalBlock"]>* {
+    animation: fadeSlideUp 0.4s ease both;
+}
+
+[data-testid="stVerticalBlock"]>*:nth-child(1) {
+    animation-delay: 0.05s;
+}
+
+[data-testid="stVerticalBlock"]>*:nth-child(2) {
+    animation-delay: 0.10s;
+}
+
+[data-testid="stVerticalBlock"]>*:nth-child(3) {
+    animation-delay: 0.15s;
+}
+
+[data-testid="stVerticalBlock"]>*:nth-child(4) {
+    animation-delay: 0.20s;
+}
+
+[data-testid="stVerticalBlock"]>*:nth-child(5) {
+    animation-delay: 0.25s;
+}
+
+/* ── Ticker tape animation ── */
+@keyframes ticker {
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+.ticker-wrap {
+    overflow: hidden;
+    background: var(--bg-deep);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 6px 0;
+    margin-bottom: 1.5rem;
+}
+
+.ticker-inner {
+    display: flex;
+    gap: 0;
+    animation: ticker 30s linear infinite;
+    width: max-content;
+}
+
+.ticker-item {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    padding: 0 32px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    border-right: 1px solid var(--border);
+}
+
+.ticker-item .up {
+    color: var(--green);
+}
+
+.ticker-item .down {
+    color: var(--red);
+}
+
+.ticker-item .name {
+    color: var(--text-muted);
+    margin-right: 8px;
+}
+
+/* ── Pulse dot ── */
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+        box-shadow: 0 0 0 0 rgba(0, 229, 255, 0.4);
+    }
+
+    50% {
+        opacity: 0.6;
+        box-shadow: 0 0 0 6px rgba(0, 229, 255, 0);
+    }
+}
+
+.live-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background: var(--cyan);
+    border-radius: 50%;
+    margin-right: 6px;
+    animation: pulse 2s ease-in-out infinite;
+    vertical-align: middle;
+}
+
+/* ── Signal badge ── */
+.signal-badge {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 3px;
+    border: 1px solid;
+}
+
+.signal-buy {
+    color: var(--green);
+    border-color: rgba(0, 255, 136, 0.4);
+    background: rgba(0, 255, 136, 0.08);
+}
+
+.signal-strong {
+    color: var(--cyan);
+    border-color: var(--cyan-border);
+    background: var(--cyan-glow);
+}
+
+.signal-neutral {
+    color: var(--amber);
+    border-color: rgba(255, 179, 0, 0.4);
+    background: var(--amber-glow);
+}
+
+.signal-reduce {
+    color: var(--red);
+    border-color: rgba(255, 64, 96, 0.4);
+    background: rgba(255, 64, 96, 0.08);
+}
+
+/* ── Glow text ── */
+.glow-cyan {
+    color: var(--cyan);
+    text-shadow: 0 0 20px rgba(0, 229, 255, 0.5);
+}
+
+.glow-amber {
+    color: var(--amber);
+    text-shadow: 0 0 20px rgba(255, 179, 0, 0.5);
+}
+
+</style>

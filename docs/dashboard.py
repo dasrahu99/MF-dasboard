@@ -1,124 +1,163 @@
 """
-dashboard.py — Full Fund Intelligence Dashboard
-Streamlit UI for all 7 pipeline modules.
+dashboard.py — Quantum Dark Fund Intelligence Dashboard
+Futuristic UI with animated components, live ticker, glow effects.
 Run: streamlit run dashboard.py
 """
 
 import json
-import sqlite3
-import logging
 from pathlib import Path
 from datetime import datetime
-
 import numpy as np
 import pandas as pd
 import streamlit as st
+import plotly.graph_objects as go
+import plotly.express as px
 
-# ── Page config ───────────────────────────────────────────────────────────────
+# ── Page config ───────────────────────────────────────────────────
 st.set_page_config(
-    page_title="MF Intelligence Dashboard",
-    page_icon="📈",
+    page_title="MF Intelligence",
+    page_icon="⬡",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
-# ── Paths ─────────────────────────────────────────────────────────────────────
-REPORTS_DIR  = Path("data/reports")
-LATEST_JSON  = REPORTS_DIR / "latest.json"
-STEPUP_JSON  = REPORTS_DIR / "stepup_report.json"
-MOMENTUM_JSON= REPORTS_DIR / "momentum_scores.json"
-BENCH_JSON   = REPORTS_DIR / "benchmark_analysis.json"
-DD_JSON      = REPORTS_DIR / "drawdown_analysis.json"
-PORTFOLIO_JSON = REPORTS_DIR / "portfolio_report.json"
-TAX_JSON     = REPORTS_DIR / "tax_analysis.json"
+# ── Inject theme ──────────────────────────────────────────────────
+def load_css():
+    css_path = Path("theme.css")
+    if css_path.exists():
+        with open(css_path) as f:
+            raw = f.read()
+        # wrap in <style> if not already
+        if not raw.strip().startswith("<style"):
+            raw = f"<style>{raw}</style>"
+        st.markdown(raw, unsafe_allow_html=True)
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
+load_css()
 
+# ── Plotly dark theme ─────────────────────────────────────────────
+PLOTLY = dict(
+    paper_bgcolor="rgba(0,0,0,0)",
+    plot_bgcolor="rgba(0,0,0,0)",
+    font=dict(family="DM Mono, monospace", color="#7a9bb5", size=11),
+    xaxis=dict(gridcolor="rgba(0,229,255,0.06)", zerolinecolor="rgba(0,229,255,0.1)",
+               tickfont=dict(size=10)),
+    yaxis=dict(gridcolor="rgba(0,229,255,0.06)", zerolinecolor="rgba(0,229,255,0.1)",
+               tickfont=dict(size=10)),
+    margin=dict(l=8, r=8, t=32, b=8),
+    hoverlabel=dict(bgcolor="#0d1520", bordercolor="#00e5ff",
+                    font=dict(family="DM Mono", size=11, color="#e8f4f8")),
+)
+
+# ── Paths ─────────────────────────────────────────────────────────
+REPORTS = Path("data/reports")
+LATEST_JSON   = REPORTS / "latest.json"
+MOMENTUM_JSON = REPORTS / "momentum_scores.json"
+BENCH_JSON    = REPORTS / "benchmark_analysis.json"
+DD_JSON       = REPORTS / "drawdown_analysis.json"
+PORT_JSON     = REPORTS / "portfolio_report.json"
+TAX_JSON      = REPORTS / "tax_analysis.json"
+
+# ── Helpers ───────────────────────────────────────────────────────
 @st.cache_data(ttl=300)
-def load_json(path):
-    if not Path(path).exists():
-        return {}
-    with open(path) as f:
-        return json.load(f)
+def load(path):
+    p = Path(path)
+    if not p.exists(): return {}
+    with open(p) as f: return json.load(f)
+
+def inr(v):
+    if v is None: return "—"
+    if abs(v) >= 1e7: return f"₹{v/1e7:.2f}Cr"
+    if abs(v) >= 1e5: return f"₹{v/1e5:.1f}L"
+    return f"₹{v:,.0f}"
+
+def pp(v, d=1):
+    if v is None: return "—"
+    return f"{v:+.{d}f}%"
+
+def signal_html(sig):
+    cls = {"STRONG BUY":"signal-strong","BUY":"signal-buy",
+           "NEUTRAL":"signal-neutral","REDUCE":"signal-reduce",
+           "WAIT":"signal-reduce","HOLD / SIP":"signal-neutral"}.get(sig,"signal-neutral")
+    return f'<span class="signal-badge {cls}">{sig}</span>'
+
+# ── Sidebar ───────────────────────────────────────────────────────
+with st.sidebar:
+    st.markdown("""
+    <div style="padding:1rem 0 1.5rem;">
+      <div style="font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;
+                  letter-spacing:0.15em;text-transform:uppercase;
+                  background:linear-gradient(135deg,#e8f4f8,#00e5ff);
+                  -webkit-background-clip:text;-webkit-text-fill-color:transparent;">
+        ⬡ MF INTEL
+      </div>
+      <div style="font-family:'DM Mono',monospace;font-size:9px;color:#3d5a72;
+                  letter-spacing:0.15em;text-transform:uppercase;margin-top:4px;">
+        <span class="live-dot"></span>LIVE · AMFI DATA
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    page = st.radio("", [
+        "⬡  OVERVIEW",
+        "◈  MOMENTUM",
+        "◉  PORTFOLIO",
+        "⊕  BENCHMARK",
+        "▽  DRAWDOWN",
+        "◎  STEP-UP",
+        "⊛  TAX",
+    ], label_visibility="collapsed")
+
+    st.divider()
+
+    if st.button("⟳  REFRESH", use_container_width=True):
+        with st.spinner("Running pipeline to fetch latest data..."):
+            import subprocess
+            import sys
+            import os
+            
+            script_dir = Path(__file__).parent
+            pipeline_path = script_dir / "pipeline.py"
+            
+            try:
+                result = subprocess.run(
+                    [sys.executable, str(pipeline_path)],
+                    capture_output=True, text=True, check=True
+                )
+                st.cache_data.clear()
+                st.rerun()
+            except subprocess.CalledProcessError as e:
+                st.error(f"Pipeline failed! Error:\n{e.stderr}\n\nOutput:\n{e.stdout}")
+
+    st.markdown("""
+    <div style="margin-top:1rem;">
+    """, unsafe_allow_html=True)
+
+    report_check = load(LATEST_JSON)
+    modules = [
+        ("FETCHER",   bool(report_check)),
+        ("ENGINE",    bool(report_check)),
+        ("MOMENTUM",  Path(MOMENTUM_JSON).exists()),
+        ("PORTFOLIO", Path(PORT_JSON).exists()),
+        ("BENCHMARK", Path(BENCH_JSON).exists()),
+        ("DRAWDOWN",  Path(DD_JSON).exists()),
+    ]
+    for name, ok in modules:
+        dot = "#00e5ff" if ok else "#3d5a72"
+        st.markdown(
+            f'<div style="font-family:DM Mono,monospace;font-size:9px;'
+            f'color:#3d5a72;letter-spacing:0.1em;padding:2px 0;">'
+            f'<span style="color:{dot}">●</span> {name}</div>',
+            unsafe_allow_html=True
+        )
 
 
-def fmt_inr(val):
-    if val is None: return "—"
-    if val >= 1e7:  return f"₹{val/1e7:.2f} Cr"
-    if val >= 1e5:  return f"₹{val/1e5:.2f} L"
-    return f"₹{val:,.0f}"
+# ════════════════════════════════════════════════════════════════════
+# OVERVIEW
+# ════════════════════════════════════════════════════════════════════
+if "OVERVIEW" in page:
 
-
-def pct(val, decimals=1):
-    if val is None: return "—"
-    return f"{val:+.{decimals}f}%"
-
-
-def color_pct(val):
-    if val is None: return "—"
-    color = "green" if val > 0 else "red"
-    return f":{color}[{val:+.1f}%]"
-
-
-SIGNAL_COLORS = {
-    "STRONG BUY": "🟢", "BUY": "🟢",
-    "NEUTRAL": "🟡", "HOLD / SIP": "🟡",
-    "REDUCE": "🔴", "WAIT": "🔴",
-    "REPLACE WITH INDEX FUND": "🔴",
-    "REVIEW": "🟡", "KEEP": "🟢",
-}
-
-# ── Sidebar navigation ────────────────────────────────────────────────────────
-
-st.sidebar.title("📈 MF Intelligence")
-st.sidebar.caption(f"Last updated: {datetime.now().strftime('%d %b %Y %H:%M')}")
-
-pages = [
-    "🏠 Overview",
-    "💼 My Portfolio",
-    "📊 Benchmark Analyser",
-    "📉 Drawdown Tracker",
-    "📈 SIP Step-Up Planner",
-    "🧾 Tax-Adjusted Returns",
-    "⚡ Momentum Signals",
-]
-page = st.sidebar.radio("Navigate", pages)
-
-if st.sidebar.button("🔄 Refresh data"):
-    with st.spinner("Running pipeline to fetch latest data..."):
-        import subprocess
-        import sys
-        import os
-        
-        script_dir = Path(__file__).parent
-        pipeline_path = script_dir / "pipeline.py"
-        
-        try:
-            result = subprocess.run(
-                [sys.executable, str(pipeline_path)],
-                capture_output=True, text=True, check=True
-            )
-            # Only clear cache and rerun if successful
-            st.cache_data.clear()
-            st.rerun()
-        except subprocess.CalledProcessError as e:
-            st.error(f"Pipeline failed! Error:\n{e.stderr}\n\nOutput:\n{e.stdout}")
-
-st.sidebar.divider()
-st.sidebar.caption("Pipeline modules active:")
-for m in ["fetcher ✓", "engine ✓", "momentum ✓", "portfolio ✓",
-          "benchmark ✓", "drawdown ✓", "stepup ✓", "tax ✓"]:
-    st.sidebar.caption(f"  {m}")
-
-
-# ═══════════════════════════════════════════════════════════════════
-# PAGE 1 — OVERVIEW
-# ═══════════════════════════════════════════════════════════════════
-if page == "🏠 Overview":
-    st.title("Fund Intelligence Dashboard")
-    st.caption("Real-time Indian mutual fund analytics — AMFI data")
-
-    report = load_json(LATEST_JSON)
+    report = load(LATEST_JSON)
+    momentum = load(MOMENTUM_JSON)
     if not report:
         st.info("Data not found. Running the pipeline automatically for the first time... (This may take 2-3 minutes as it downloads 5-10 years of historical NAV data).")
         with st.spinner("Fetching data from AMFI..."):
@@ -136,607 +175,699 @@ if page == "🏠 Overview":
                 st.stop()
 
     funds = [v for v in report.values() if "error" not in v]
+    mom_by_code = {m.get("scheme_code"): m for m in (momentum or [])}
 
-    # KPI row
-    col1, col2, col3, col4, col5 = st.columns(5)
-    avg_cagr_5y = [f.get("cagr", {}).get("5y") for f in funds if f.get("cagr", {}).get("5y")]
-    buy_signals = sum(1 for f in funds
-                      if f.get("momentum", {}).get("signal") in ("STRONG BUY", "BUY"))
-    best_sharpe_fund = max(funds, key=lambda f: f.get("risk", {}).get("sharpe_3y") or 0)
-    avg5 = round(sum(avg_cagr_5y) / len(avg_cagr_5y), 1) if avg_cagr_5y else None
-
-    col1.metric("Funds tracked",    len(funds))
-    col2.metric("Avg 5Y CAGR",      f"{avg5}%" if avg5 else "—")
-    col3.metric("BUY signals",       buy_signals)
-    col4.metric("Best Sharpe",
-                best_sharpe_fund.get("fund_name", "")[:20],
-                f"{best_sharpe_fund.get('risk',{}).get('sharpe_3y','—')}")
-    col5.metric("vs Nifty 50",       "Benchmark: ~14%")
-
-    st.divider()
-
-    # Fund rankings table
-    st.subheader("Fund Rankings")
-    rows = []
-    for code, f in report.items():
-        if "error" in f: continue
-        m = f.get("momentum", {})
-        rows.append({
-            "Fund":         f.get("fund_name", f.get("scheme_name", ""))[:35],
-            "1Y%":          f.get("cagr", {}).get("1y"),
-            "3Y%":          f.get("cagr", {}).get("3y"),
-            "5Y%":          f.get("cagr", {}).get("5y"),
-            "Sharpe":       f.get("risk", {}).get("sharpe_3y"),
-            "Max DD%":      f.get("risk", {}).get("max_drawdown"),
-            "SIP XIRR%":    f.get("sip_simulation", {}).get("xirr_pct"),
-            "Momentum":     f"{SIGNAL_COLORS.get(m.get('signal',''), '⚪')} {m.get('signal','—')}",
-            "Score":        m.get("composite_score"),
-        })
-    df = pd.DataFrame(rows).sort_values("5Y%", ascending=False)
-    st.dataframe(df, use_container_width=True, hide_index=True)
-
-    st.divider()
-
-    # ── Top 3 Closest to BUY ─────────────────────────────────────
-    st.subheader("🎯 Watchlist — Closest to BUY signal")
-    st.caption(
-        "NEUTRAL funds ranked by how close they are to flipping BUY (score ≥ 60). "
-        "These are your next entry opportunities — watch these first."
+    # ── Ticker tape ───────────────────────────────────────────────
+    ticker_items = ""
+    for code, f in list(report.items())[:10]:
+        name  = f.get("fund_name", f.get("scheme_name",""))[:18]
+        cagr1 = f.get("cagr",{}).get("1y")
+        if cagr1 is None: continue
+        cls   = "up" if cagr1 > 0 else "down"
+        ticker_items += (
+            f'<div class="ticker-item">'
+            f'<span class="name">{name}</span>'
+            f'<span class="{cls}">{cagr1:+.1f}%</span>'
+            f'</div>'
+        )
+    # duplicate for seamless loop
+    st.markdown(
+        f'<div class="ticker-wrap"><div class="ticker-inner">'
+        f'{ticker_items}{ticker_items}'
+        f'</div></div>',
+        unsafe_allow_html=True
     )
 
-    neutral_funds = []
-    for code, f in report.items():
-        if "error" in f:
-            continue
-        m     = f.get("momentum", {})
-        score = m.get("composite_score")
-        sig   = m.get("signal", "")
-        if score is None:
-            continue
-        # Include NEUTRAL (40-59) and REDUCE above 35; skip BUY / STRONG BUY
-        if sig in ("NEUTRAL", "REDUCE") and score >= 35:
-            neutral_funds.append({
-                "code":   code,
-                "fund":   f,
-                "score":  score,
-                "signal": sig,
-                "m":      m,
+    # ── Page header ───────────────────────────────────────────────
+    st.markdown("""
+    <div style="margin-bottom:2rem;">
+      <h1 style="margin:0;">Fund Intelligence</h1>
+      <p style="font-family:'DM Mono',monospace;font-size:11px;color:#3d5a72;
+                letter-spacing:0.1em;text-transform:uppercase;margin-top:6px;">
+        Indian equity market · real-time AMFI data · 
+        """ + datetime.now().strftime("%d %b %Y %H:%M") + """
+      </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ── KPI cards ─────────────────────────────────────────────────
+    avg5 = [f.get("cagr",{}).get("5y") for f in funds if f.get("cagr",{}).get("5y")]
+    avg5 = round(sum(avg5)/len(avg5),1) if avg5 else None
+    buys = sum(1 for m in (momentum or []) if m.get("signal") in ("BUY","STRONG BUY"))
+    best = max(funds, key=lambda f: f.get("risk",{}).get("sharpe_3y") or 0)
+    neutrals = [m for m in (momentum or []) if m.get("signal") in ("NEUTRAL","REDUCE")
+                and (m.get("composite_score") or 0) >= 35]
+    neutrals.sort(key=lambda x: x.get("composite_score",0), reverse=True)
+
+    k1,k2,k3,k4,k5 = st.columns(5)
+    k1.metric("Funds tracked",  len(funds))
+    k2.metric("Avg 5Y CAGR",    f"{avg5}%" if avg5 else "—",    delta="vs Nifty ~14%")
+    k3.metric("BUY signals",    buys,                            delta="active now")
+    k4.metric("Best Sharpe",    best.get("fund_name","")[:16],   delta=f"{best.get('risk',{}).get('sharpe_3y','—')}")
+    k5.metric("Watchlist",      len(neutrals),                   delta="near BUY")
+
+    st.divider()
+
+    # ── Main layout ───────────────────────────────────────────────
+    left, right = st.columns([3,2], gap="large")
+
+    with left:
+        st.markdown("### Fund Rankings")
+        rows = []
+        for code, f in report.items():
+            if "error" in f: continue
+            m = mom_by_code.get(code, {})
+            rows.append({
+                "Fund":      f.get("fund_name", f.get("scheme_name",""))[:32],
+                "1Y%":       f.get("cagr",{}).get("1y"),
+                "3Y%":       f.get("cagr",{}).get("3y"),
+                "5Y%":       f.get("cagr",{}).get("5y"),
+                "Sharpe":    f.get("risk",{}).get("sharpe_3y"),
+                "DD%":       f.get("risk",{}).get("max_drawdown"),
+                "XIRR%":     f.get("sip_simulation",{}).get("xirr_pct"),
+                "Score":     m.get("composite_score"),
+                "Signal":    m.get("signal","—"),
             })
+        df = pd.DataFrame(rows).sort_values("5Y%", ascending=False)
+        st.dataframe(df, use_container_width=True, hide_index=True,
+                     column_config={
+                        "Score": st.column_config.ProgressColumn("Score", min_value=0, max_value=100),
+                        "5Y%":   st.column_config.NumberColumn("5Y%", format="%.1f%%"),
+                        "3Y%":   st.column_config.NumberColumn("3Y%", format="%.1f%%"),
+                        "1Y%":   st.column_config.NumberColumn("1Y%", format="%.1f%%"),
+                     })
 
-    neutral_funds.sort(key=lambda x: x["score"], reverse=True)
-    top3 = neutral_funds[:3]
+    with right:
+        st.markdown("### Category CAGR")
+        cats = ["Large Cap","Mid Cap","Small Cap","Flexi Cap","ELSS","Index"]
+        cat_avgs = []
+        for cat in cats:
+            vals = [f.get("cagr",{}).get("5y") for f in funds
+                    if f.get("category","") == cat and f.get("cagr",{}).get("5y")]
+            cat_avgs.append(round(sum(vals)/len(vals),1) if vals else 0)
 
+        fig = go.Figure(go.Bar(
+            x=cat_avgs, y=cats, orientation="h",
+            marker=dict(
+                color=cat_avgs,
+                colorscale=[[0,"#162338"],[0.5,"#00b8cc"],[1,"#00e5ff"]],
+                line=dict(color="rgba(0,229,255,0.3)", width=1),
+            ),
+            text=[f"{v:.1f}%" for v in cat_avgs],
+            textposition="outside",
+            textfont=dict(family="DM Mono", size=10, color="#00e5ff"),
+        ))
+        fig.update_layout(**PLOTLY, height=240,
+                          yaxis=dict(autorange="reversed",
+                                     **PLOTLY["yaxis"]),
+                          xaxis=dict(title="5Y CAGR %", **PLOTLY["xaxis"]))
+        st.plotly_chart(fig, use_container_width=True)
+
+        # Risk vs Return bubble
+        st.markdown("### Risk · Return")
+        scatter_pts = []
+        for code, f in report.items():
+            if "error" in f: continue
+            cagr5 = f.get("cagr",{}).get("5y")
+            vol   = f.get("risk",{}).get("volatility_3y_ann")
+            aum   = f.get("aum", 20000)
+            if cagr5 and vol:
+                scatter_pts.append(dict(
+                    x=vol, y=cagr5,
+                    name=f.get("fund_name", f.get("scheme_name",""))[:20],
+                    size=max(8, min(20, (aum or 20000)/5000)),
+                ))
+
+        if scatter_pts:
+            fig2 = go.Figure()
+            for pt in scatter_pts:
+                fig2.add_trace(go.Scatter(
+                    x=[pt["x"]], y=[pt["y"]],
+                    mode="markers+text",
+                    text=[pt["name"]],
+                    textposition="top center",
+                    textfont=dict(size=8, color="#3d5a72"),
+                    marker=dict(size=pt["size"], color="#00e5ff",
+                                line=dict(color="#162338", width=1),
+                                opacity=0.8),
+                    showlegend=False,
+                    hovertemplate=f"<b>{pt['name']}</b><br>CAGR: {pt['y']:.1f}%<br>Vol: {pt['x']:.1f}%<extra></extra>",
+                ))
+            fig2.update_layout(**PLOTLY, height=220,
+                               xaxis=dict(title="Volatility %", **PLOTLY["xaxis"]),
+                               yaxis=dict(title="5Y CAGR %",    **PLOTLY["yaxis"]))
+            st.plotly_chart(fig2, use_container_width=True)
+
+    st.divider()
+
+    # ── Watchlist: Top 3 closest to BUY ──────────────────────────
+    st.markdown("### 🎯 Watchlist — Closest to BUY")
+    st.markdown(
+        '<p style="font-family:DM Mono,monospace;font-size:10px;color:#3d5a72;'
+        'text-transform:uppercase;letter-spacing:0.1em;">'
+        'NEUTRAL funds ranked by proximity to BUY threshold (score ≥ 60)</p>',
+        unsafe_allow_html=True
+    )
+
+    top3 = neutrals[:3]
     if not top3:
-        st.info(
-            "No NEUTRAL funds found — either all funds are BUY/STRONG BUY already, "
-            "or momentum scores haven't been generated yet. "
-            "Run `python momentum.py` to refresh."
-        )
+        st.info("No NEUTRAL funds found — run `python momentum.py` to refresh.")
     else:
-        card_cols = st.columns(3)
-        for col, entry in zip(card_cols, top3):
-            f     = entry["fund"]
-            m     = entry["m"]
-            score = entry["score"]
-            fa    = m.get("factors", {})
-            tr    = fa.get("trailing_returns", {})
+        cols = st.columns(3)
+        for col, m in zip(cols, top3):
+            score  = m.get("composite_score", 0)
+            sig    = m.get("signal","")
+            fa     = m.get("factors", {})
+            tr     = fa.get("trailing_returns", {})
+            accel  = fa.get("acceleration_pct")
+            gap    = round(60 - score, 1)
+            prog   = max(0.0, min(1.0, (score - 35) / 25))
 
-            gap_to_buy = round(60 - score, 1)
-            name       = f.get("fund_name", f.get("scheme_name", ""))[:28]
-            cagr5      = f.get("cagr", {}).get("5y")
-            sharpe     = f.get("risk", {}).get("sharpe_3y")
-
-            # Progress 35→60 maps to 0→1
-            progress = max(0.0, min(1.0, (score - 35) / 25))
+            # find full fund data
+            code   = m.get("scheme_code","")
+            f      = report.get(code, {})
+            name   = f.get("fund_name", m.get("scheme_name",""))[:26]
+            cagr5  = f.get("cagr",{}).get("5y")
+            sharpe = f.get("risk",{}).get("sharpe_3y")
 
             with col:
                 with st.container(border=True):
-                    st.markdown(f"**{name}**")
-                    if cagr5:
-                        st.caption(f"{f.get('category', '')} · 5Y CAGR: {cagr5:.1f}%")
-                    else:
-                        st.caption(f"{f.get('category', '')}")
+                    st.markdown(
+                        f'<div style="font-family:Syne,sans-serif;font-weight:700;'
+                        f'font-size:14px;color:#e8f4f8;margin-bottom:4px;">{name}</div>'
+                        f'<div style="font-family:DM Mono,monospace;font-size:9px;'
+                        f'color:#3d5a72;text-transform:uppercase;letter-spacing:0.08em;">'
+                        f'{f.get("category","")}'
+                        f'{"  ·  5Y: "+str(cagr5)+"%" if cagr5 else ""}</div>',
+                        unsafe_allow_html=True
+                    )
+                    st.markdown('<div style="height:8px"></div>', unsafe_allow_html=True)
 
-                    sc1, sc2 = st.columns(2)
-                    sc1.metric("Score", f"{score:.0f} / 100")
-                    sc2.metric("Gap to BUY", f"{gap_to_buy:.1f} pts", delta="Need ≥ 60",
-                               delta_color="off")
+                    c1,c2 = st.columns(2)
+                    c1.metric("Score",    f"{score:.0f} / 100")
+                    c2.metric("To BUY",   f"{gap:.1f} pts", delta="need ≥60", delta_color="off")
 
-                    st.progress(progress, text=f"Score {score:.0f} → BUY threshold: 60")
+                    st.progress(prog, text=f"{'█'*int(prog*10)}{'░'*(10-int(prog*10))}  {score:.0f}→60")
 
-                    t1, t2 = st.columns(2)
+                    t1,t2 = st.columns(2)
                     r1m = tr.get("1m_pct")
                     r3m = tr.get("3m_pct")
                     t1.metric("1M", f"{r1m:+.1f}%" if r1m is not None else "—")
                     t2.metric("3M", f"{r3m:+.1f}%" if r3m is not None else "—")
 
-                    accel = fa.get("acceleration_pct")
                     if accel is not None:
                         arrow = "▲" if accel > 0 else "▼"
                         msg   = f"{arrow} {abs(accel):.1f}% momentum acceleration"
-                        if accel > 0:
-                            st.success(msg)
-                        else:
-                            st.warning(msg)
+                        if accel > 0: st.success(msg)
+                        else:         st.warning(msg)
 
-                    fs = m.get("factor_scores", {})
+                    fs = m.get("factor_scores",{})
                     if fs:
                         weak = sorted(fs.items(), key=lambda x: x[1])[:2]
-                        st.caption(
-                            "Weakest: " + ", ".join(f"{k} ({v*100:.0f})" for k, v in weak)
-                        )
-
+                        st.caption("Weakest: " + ", ".join(f"{k}({v*100:.0f})" for k,v in weak))
                     if sharpe:
-                        st.caption(f"Sharpe (3Y): {sharpe:.2f}")
+                        st.caption(f"Sharpe 3Y: {sharpe:.2f}")
 
 
-# ═══════════════════════════════════════════════════════════════════
-# PAGE 2 — MY PORTFOLIO (Module 3)
-# ═══════════════════════════════════════════════════════════════════
-elif page == "💼 My Portfolio":
-    st.title("Portfolio Simulator")
-    st.caption("Your personalised multi-fund portfolio — SIP + lump sum analysis")
+# ════════════════════════════════════════════════════════════════════
+# MOMENTUM
+# ════════════════════════════════════════════════════════════════════
+elif "MOMENTUM" in page:
+    st.markdown("<h1>Momentum Signals</h1>", unsafe_allow_html=True)
+    st.markdown('<p style="font-family:DM Mono,monospace;font-size:10px;color:#3d5a72;'
+                'text-transform:uppercase;letter-spacing:0.1em;">'
+                '8-factor composite scoring · 0–100 scale · updated daily</p>',
+                unsafe_allow_html=True)
 
-    report = load_json(LATEST_JSON)
-    portfolio_report = load_json(PORTFOLIO_JSON)
-
-    if not portfolio_report:
-        st.info("Run `python portfolio.py` to generate your portfolio report.")
+    momentum = load(MOMENTUM_JSON)
+    if not momentum:
+        st.info("Run `python momentum.py` to generate momentum scores.")
         st.stop()
 
-    s = portfolio_report.get("summary", {})
-    b = portfolio_report.get("benchmark", {})
-    d = portfolio_report.get("diversification", {})
+    names  = [m.get("scheme_name","")[:28] for m in momentum]
+    scores = [m.get("composite_score",0) for m in momentum]
 
-    c1, c2, c3, c4, c5 = st.columns(5)
-    c1.metric("Total Invested",    fmt_inr(s.get("total_invested")))
-    c2.metric("Current Value",     fmt_inr(s.get("total_current_value")),
-              delta=f"{s.get('absolute_return_pct',0):+.1f}%")
-    c3.metric("Total Gain",        fmt_inr(s.get("total_gain")))
-    c4.metric("Monthly SIP",       fmt_inr(s.get("monthly_sip_total")))
-    c5.metric("Diversification",   d.get("grade", "—"),
-              delta=f"Score: {d.get('score', 0)}")
+    # Colour gradient: red→amber→cyan
+    bar_colors = []
+    for s in scores:
+        if s >= 60:   bar_colors.append("#00e5ff")
+        elif s >= 40: bar_colors.append("#ffb300")
+        else:         bar_colors.append("#ff4060")
+
+    fig = go.Figure()
+    fig.add_vline(x=60, line=dict(color="#00e5ff", width=1, dash="dot"),
+                  annotation_text="BUY", annotation_font=dict(color="#00e5ff", size=9))
+    fig.add_vline(x=40, line=dict(color="#ffb300", width=1, dash="dot"),
+                  annotation_text="NEUTRAL", annotation_font=dict(color="#ffb300", size=9))
+    fig.add_trace(go.Bar(
+        x=scores, y=names, orientation="h",
+        marker=dict(color=bar_colors,
+                    line=dict(color="rgba(0,0,0,0.3)", width=1)),
+        text=[f"{s:.0f}" for s in scores],
+        textposition="outside",
+        textfont=dict(family="DM Mono", size=10, color="#7a9bb5"),
+    ))
+    fig.update_layout(**PLOTLY,
+                      height=max(320, len(names)*38),
+                      xaxis=dict(range=[0,115], title="Composite Score", **PLOTLY["xaxis"]),
+                      yaxis=dict(autorange="reversed", **PLOTLY["yaxis"]))
+    st.plotly_chart(fig, use_container_width=True)
 
     st.divider()
 
-    col_left, col_right = st.columns([3, 2])
+    # ── Factor breakdown ──────────────────────────────────────────
+    left, right = st.columns([1,1], gap="large")
 
-    with col_left:
-        st.subheader("Fund Breakdown")
+    with left:
+        st.markdown("### Factor Radar")
+        sel_name = st.selectbox("Select fund", names, label_visibility="collapsed")
+        sel = next((m for m in momentum if m.get("scheme_name","")[:28] == sel_name), {})
+
+    with right:
+        if sel:
+            fa = sel.get("factors",{})
+            tr = fa.get("trailing_returns",{})
+            mc1,mc2,mc3 = st.columns(3)
+            mc1.metric("Score",    sel.get("composite_score"))
+            mc2.metric("Signal",   sel.get("signal","—"))
+            mc3.metric("RSI(14)",  fa.get("rsi_14","—"))
+            st.info(f"**Action:** {sel.get('action','—')}")
+
+            t1,t2,t3,t4 = st.columns(4)
+            t1.metric("1M",  pp(tr.get("1m_pct")))
+            t2.metric("3M",  pp(tr.get("3m_pct")))
+            t3.metric("6M",  pp(tr.get("6m_pct")))
+            t4.metric("12M", pp(tr.get("12m_pct")))
+
+    if sel:
+        fs = sel.get("factor_scores",{})
+        if fs:
+            cats   = list(fs.keys())
+            vals   = [fs[c]*100 for c in cats]
+            cats_c = cats + [cats[0]]
+            vals_c = vals + [vals[0]]
+
+            fig2 = go.Figure(go.Scatterpolar(
+                r=vals_c, theta=cats_c,
+                fill="toself",
+                fillcolor="rgba(0,229,255,0.07)",
+                line=dict(color="#00e5ff", width=2),
+                marker=dict(color="#00e5ff", size=5),
+            ))
+            fig2.update_layout(
+                **{k:v for k,v in PLOTLY.items() if k not in ("xaxis","yaxis","margin")},
+                polar=dict(
+                    bgcolor="rgba(0,0,0,0)",
+                    radialaxis=dict(visible=True, range=[0,100],
+                                   gridcolor="rgba(0,229,255,0.1)",
+                                   tickfont=dict(size=8,color="#3d5a72")),
+                    angularaxis=dict(tickfont=dict(size=9,color="#7a9bb5"),
+                                     gridcolor="rgba(0,229,255,0.08)"),
+                ),
+                height=340,
+                margin=dict(l=40,r=40,t=40,b=40),
+            )
+            st.plotly_chart(fig2, use_container_width=True)
+
+        trend = fa.get("trend",{})
+        if trend:
+            tc1,tc2,tc3 = st.columns(3)
+            tc1.metric("MA 50",  f"₹{trend.get('ma50','—')}")
+            tc2.metric("MA 200", f"₹{trend.get('ma200','—')}")
+            tc3.metric("Bullish stack", "✅" if trend.get("ma_bullish_stack") else "❌")
+
+
+# ════════════════════════════════════════════════════════════════════
+# PORTFOLIO
+# ════════════════════════════════════════════════════════════════════
+elif "PORTFOLIO" in page:
+    st.markdown("<h1>Portfolio Simulator</h1>", unsafe_allow_html=True)
+
+    port = load(PORT_JSON)
+    if not port:
+        st.info("Run `python portfolio.py` to generate your portfolio report.")
+        st.stop()
+
+    s = port.get("summary",{})
+    b = port.get("benchmark",{})
+    d = port.get("diversification",{})
+
+    k1,k2,k3,k4,k5 = st.columns(5)
+    k1.metric("Invested",        inr(s.get("total_invested")))
+    k2.metric("Current Value",   inr(s.get("total_current_value")),
+              delta=f"{s.get('absolute_return_pct',0):+.1f}%")
+    k3.metric("Total Gain",      inr(s.get("total_gain")))
+    k4.metric("Monthly SIP",     inr(s.get("monthly_sip_total")))
+    k5.metric("Diversification", d.get("grade","—"),
+              delta=f"Score: {d.get('score',0)}")
+
+    st.divider()
+
+    left, right = st.columns([3,2], gap="large")
+
+    with left:
+        st.markdown("### Fund Breakdown")
         fund_rows = []
-        for code, f in portfolio_report.get("funds", {}).items():
+        for code, f in port.get("funds",{}).items():
             if "error" in f: continue
-            sip = f.get("sip", {})
-            ls  = f.get("lump_sum", {})
+            sip = f.get("sip",{})
+            ls  = f.get("lump_sum",{})
             fund_rows.append({
-                "Fund":       f.get("name", "")[:30],
-                "Category":   f.get("category", ""),
-                "SIP Value":  fmt_inr(sip.get("current_value")),
-                "SIP XIRR%":  sip.get("xirr_pct"),
-                "LS Value":   fmt_inr(ls.get("current_value")),
-                "LS CAGR%":   ls.get("cagr_pct"),
-                "1M%":        f.get("trailing", {}).get("1m"),
-                "3M%":        f.get("trailing", {}).get("3m"),
+                "Fund":     f.get("name","")[:28],
+                "Category": f.get("category",""),
+                "SIP Val":  inr(sip.get("current_value")),
+                "SIP XIRR":sip.get("xirr_pct"),
+                "LS Val":   inr(ls.get("current_value")),
+                "LS CAGR":  ls.get("cagr_pct"),
+                "1M%":      f.get("trailing",{}).get("1m"),
+                "3M%":      f.get("trailing",{}).get("3m"),
             })
         st.dataframe(pd.DataFrame(fund_rows), use_container_width=True, hide_index=True)
 
-    with col_right:
-        st.subheader("Category Allocation")
-        cat_w = d.get("category_weights", {})
+        st.markdown("### vs Nifty 50")
+        bc1,bc2,bc3 = st.columns(3)
+        bc1.metric("Portfolio 12M", pp(b.get("portfolio_12m_pct")))
+        bc2.metric("Nifty 50 12M",  pp(b.get("nifty50_12m_pct")))
+        bc3.metric("Your Alpha",    pp(b.get("alpha_12m_pct")), delta="vs benchmark")
+
+    with right:
+        st.markdown("### Allocation")
+        cat_w = d.get("category_weights",{})
         if cat_w:
-            import plotly.express as px
-            fig = px.pie(
+            colors = ["#00e5ff","#ffb300","#00ff88","#ff4060","#7a9bb5","#b388ff","#ff8a65"]
+            fig = go.Figure(go.Pie(
                 values=list(cat_w.values()),
-                names=list(cat_w.keys()),
-                hole=0.5,
-                color_discrete_sequence=px.colors.qualitative.Set2,
-            )
-            fig.update_layout(
-                showlegend=True, height=280,
-                margin=dict(t=0, b=0, l=0, r=0),
-                paper_bgcolor="rgba(0,0,0,0)",
-                plot_bgcolor="rgba(0,0,0,0)",
-            )
+                labels=list(cat_w.keys()),
+                hole=0.62,
+                marker=dict(colors=colors[:len(cat_w)],
+                            line=dict(color="#030508", width=3)),
+                textfont=dict(family="DM Mono", size=10),
+                textinfo="label+percent",
+            ))
+            fig.update_layout(**{k:v for k,v in PLOTLY.items() if k not in ("xaxis","yaxis")},
+                              height=280, margin=dict(l=0,r=0,t=8,b=0),
+                              showlegend=False)
+            fig.add_annotation(text=f"<b>{len(cat_w)}</b><br>categories",
+                               x=0.5, y=0.5, showarrow=False,
+                               font=dict(family="Syne", size=13, color="#7a9bb5"))
             st.plotly_chart(fig, use_container_width=True)
 
-    st.subheader("Portfolio vs Nifty 50")
-    bc1, bc2, bc3 = st.columns(3)
-    bc1.metric("Portfolio 12M",   pct(b.get("portfolio_12m_pct")))
-    bc2.metric("Nifty 50 12M",    pct(b.get("nifty50_12m_pct")))
-    bc3.metric("Your Alpha",      pct(b.get("alpha_12m_pct")), delta="vs benchmark")
+        warnings = port.get("warnings",[])
+        if warnings:
+            st.markdown("### ⚠ Warnings")
+            for w in warnings:
+                if w["severity"] == "high": st.warning(w["message"])
+                else: st.info(w["message"])
 
-    warnings = portfolio_report.get("warnings", [])
-    if warnings:
-        st.subheader("⚠️ Portfolio Warnings")
-        for w in warnings:
-            level = st.warning if w["severity"] == "high" else st.info
-            level(w["message"])
-
-    with st.expander("✏️ Edit portfolio allocation"):
-        st.caption("Modify your fund allocations below and re-run `python portfolio.py`")
-        from portfolio import DEFAULT_PORTFOLIO
-        edited_rows = []
-        for code, cfg in DEFAULT_PORTFOLIO.items():
-            edited_rows.append({
-                "Scheme Code": code,
-                "Fund Name":   cfg["name"],
-                "Category":    cfg["category"],
-                "Monthly SIP (₹)": cfg["monthly_sip"],
-                "Lump Sum (₹)":    cfg["lump_sum"],
-            })
-        st.data_editor(pd.DataFrame(edited_rows), use_container_width=True,
-                        num_rows="dynamic", hide_index=True, key="portfolio_editor")
-        st.caption("After editing, update DEFAULT_PORTFOLIO in portfolio.py and re-run.")
+    with st.expander("✏  Edit portfolio — portfolio_config.json"):
+        st.caption("Edit data/portfolio_config.json directly, then re-run python portfolio.py")
+        cfg_path = Path("data/portfolio_config.json")
+        if cfg_path.exists():
+            with open(cfg_path) as f:
+                cfg_text = f.read()
+            edited = st.text_area("portfolio_config.json", cfg_text, height=300,
+                                   label_visibility="collapsed")
+            if st.button("💾  Save config"):
+                try:
+                    json.loads(edited)   # validate JSON
+                    with open(cfg_path,"w") as f: f.write(edited)
+                    st.success("Saved — run python portfolio.py to regenerate report.")
+                except json.JSONDecodeError as e:
+                    st.error(f"Invalid JSON: {e}")
 
 
-# ═══════════════════════════════════════════════════════════════════
-# PAGE 3 — BENCHMARK ANALYSER (Module 4)
-# ═══════════════════════════════════════════════════════════════════
-elif page == "📊 Benchmark Analyser":
-    st.title("Benchmark Analyser")
-    st.caption("Fund alpha vs Nifty 50 & Nifty 500 — KEEP, REVIEW, or REPLACE?")
+# ════════════════════════════════════════════════════════════════════
+# BENCHMARK
+# ════════════════════════════════════════════════════════════════════
+elif "BENCHMARK" in page:
+    st.markdown("<h1>Benchmark Analyser</h1>", unsafe_allow_html=True)
+    st.markdown('<p style="font-family:DM Mono,monospace;font-size:10px;color:#3d5a72;'
+                'text-transform:uppercase;letter-spacing:0.1em;">'
+                'Alpha vs Nifty 50 · information ratio · up/down capture · KEEP or REPLACE</p>',
+                unsafe_allow_html=True)
 
-    bench = load_json(BENCH_JSON)
+    bench = load(BENCH_JSON)
     if not bench:
         st.info("Run `python benchmark.py` to generate benchmark data.")
         st.stop()
 
-    recs = [r.get("recommendation", "") for r in bench.values()]
-    c1, c2, c3 = st.columns(3)
-    c1.metric("KEEP",    sum(1 for r in recs if r == "KEEP"),    help="Consistently beats benchmark")
-    c2.metric("REVIEW",  sum(1 for r in recs if r == "REVIEW"),  help="Marginal outperformance")
-    c3.metric("REPLACE", sum(1 for r in recs if "REPLACE" in r), help="Index fund is better")
+    recs = [r.get("recommendation","") for r in bench.values()]
+    k1,k2,k3 = st.columns(3)
+    k1.metric("KEEP",    sum(1 for r in recs if r=="KEEP"),            delta="beats benchmark")
+    k2.metric("REVIEW",  sum(1 for r in recs if r=="REVIEW"),          delta="marginal alpha")
+    k3.metric("REPLACE", sum(1 for r in recs if "REPLACE" in r),       delta="use index fund")
 
     st.divider()
 
-    st.subheader("Alpha vs Nifty 50")
     alpha_rows = []
     for code, r in bench.items():
-        nifty = r.get("benchmarks", {}).get("Nifty 50", {})
-        alpha = nifty.get("alpha_pct", {})
-        cap   = nifty.get("capture", {})
+        nifty = r.get("benchmarks",{}).get("Nifty 50",{})
+        alpha = nifty.get("alpha_pct",{})
+        cap   = nifty.get("capture",{})
         alpha_rows.append({
-            "Fund":           r.get("scheme_name", "")[:30],
-            "Alpha 1Y%":      alpha.get("1y"),
-            "Alpha 3Y%":      alpha.get("3y"),
-            "Alpha 5Y%":      alpha.get("5y"),
-            "Info Ratio":     nifty.get("information_ratio"),
-            "Up Capture%":    cap.get("up_capture_pct"),
-            "Down Capture%":  cap.get("down_capture_pct"),
-            "Beat Bench%":    nifty.get("beat_consistency_pct"),
-            "Recommendation": f"{SIGNAL_COLORS.get(r.get('recommendation',''), '⚪')} "
-                               f"{r.get('recommendation','')}",
+            "Fund":          r.get("scheme_name","")[:28],
+            "Alpha 1Y%":     alpha.get("1y"),
+            "Alpha 3Y%":     alpha.get("3y"),
+            "Alpha 5Y%":     alpha.get("5y"),
+            "Info Ratio":    nifty.get("information_ratio"),
+            "Up Cap%":       cap.get("up_capture_pct"),
+            "Dn Cap%":       cap.get("down_capture_pct"),
+            "Beat%":         nifty.get("beat_consistency_pct"),
+            "Verdict":       r.get("recommendation",""),
         })
     st.dataframe(pd.DataFrame(alpha_rows), use_container_width=True, hide_index=True)
 
-    st.subheader("Fund Deep Dive")
-    selected = st.selectbox("Select fund", [r.get("scheme_name") for r in bench.values()])
-    sel_data = next((r for r in bench.values() if r.get("scheme_name") == selected), {})
-    if sel_data:
-        for bname, bdata in sel_data.get("benchmarks", {}).items():
+    st.markdown("### Deep Dive")
+    selected = st.selectbox("Fund", [r.get("scheme_name") for r in bench.values()],
+                             label_visibility="collapsed")
+    sel = next((r for r in bench.values() if r.get("scheme_name")==selected), {})
+    if sel:
+        for bname, bdata in sel.get("benchmarks",{}).items():
             with st.expander(f"vs {bname}", expanded=True):
-                a1, a2, a3, a4 = st.columns(4)
-                a1.metric("Info Ratio",       bdata.get("information_ratio", "—"))
-                a2.metric("Beat Consistency", f"{bdata.get('beat_consistency_pct','—')}%")
-                cap = bdata.get("capture", {})
-                a3.metric("Up Capture",       f"{cap.get('up_capture_pct','—')}%")
-                a4.metric("Down Capture",     f"{cap.get('down_capture_pct','—')}%")
-                st.info(f"**Capture verdict:** {cap.get('verdict','—')}")
-                st.success(f"**Recommendation:** {bdata.get('verdict','—')}")
+                a1,a2,a3,a4 = st.columns(4)
+                a1.metric("Info Ratio",    bdata.get("information_ratio","—"))
+                a2.metric("Beat %",        f"{bdata.get('beat_consistency_pct','—')}%")
+                cap = bdata.get("capture",{})
+                a3.metric("Up Capture",    f"{cap.get('up_capture_pct','—')}%")
+                a4.metric("Down Capture",  f"{cap.get('down_capture_pct','—')}%")
+                st.info(f"Capture: {cap.get('verdict','—')}")
+                rec = bdata.get("verdict","—")
+                if "KEEP" in rec:    st.success(f"Recommendation: {rec}")
+                elif "REVIEW" in rec:st.warning(f"Recommendation: {rec}")
+                else:                st.error(f"Recommendation: {rec}")
 
 
-# ═══════════════════════════════════════════════════════════════════
-# PAGE 4 — DRAWDOWN TRACKER (Module 5)
-# ═══════════════════════════════════════════════════════════════════
-elif page == "📉 Drawdown Tracker":
-    st.title("Drawdown Recovery Tracker")
-    st.caption("Every crash analysed — how deep, how long to recover, SIP benefit during crashes")
+# ════════════════════════════════════════════════════════════════════
+# DRAWDOWN
+# ════════════════════════════════════════════════════════════════════
+elif "DRAWDOWN" in page:
+    st.markdown("<h1>Drawdown Tracker</h1>", unsafe_allow_html=True)
 
-    dd = load_json(DD_JSON)
+    dd = load(DD_JSON)
     if not dd:
         st.info("Run `python drawdown.py` to generate drawdown data.")
         st.stop()
 
-    st.subheader("Current drawdown status")
     dd_rows = []
     for code, r in dd.items():
-        s = r.get("summary", {})
+        s = r.get("summary",{})
         dd_rows.append({
-            "Fund":               r.get("scheme_name", "")[:30],
-            "Current DD%":        r.get("current_drawdown_pct"),
-            "Recovery needed%":   r.get("recovery_needed_pct"),
-            "Worst DD%":          s.get("worst_drawdown_pct"),
-            "Avg recovery (mo)":  s.get("avg_recovery_months"),
-            "Max recovery (days)":s.get("max_recovery_days"),
-            "SIP always wins":    "✅" if s.get("sip_always_wins") else "❌",
+            "Fund":            r.get("scheme_name","")[:28],
+            "Current DD%":     r.get("current_drawdown_pct"),
+            "Recovery Needed%":r.get("recovery_needed_pct"),
+            "Worst DD%":       s.get("worst_drawdown_pct"),
+            "Avg Recov (mo)":  s.get("avg_recovery_months"),
+            "Max Recov (d)":   s.get("max_recovery_days"),
+            "SIP Wins":        "✅" if s.get("sip_always_wins") else "❌",
         })
     df = pd.DataFrame(dd_rows).sort_values("Current DD%")
-    st.dataframe(df, use_container_width=True, hide_index=True)
+    st.dataframe(df, use_container_width=True, hide_index=True,
+                 column_config={
+                    "Current DD%":  st.column_config.NumberColumn("Current DD%", format="%.1f%%"),
+                    "Worst DD%":    st.column_config.NumberColumn("Worst DD%",   format="%.1f%%"),
+                 })
 
     st.divider()
 
-    selected = st.selectbox("Deep dive into fund", [r.get("scheme_name") for r in dd.values()])
-    sel = next((r for r in dd.values() if r.get("scheme_name") == selected), {})
+    selected = st.selectbox("Deep dive", [r.get("scheme_name") for r in dd.values()],
+                             label_visibility="collapsed")
+    sel = next((r for r in dd.values() if r.get("scheme_name")==selected), {})
     if sel:
-        d1, d2, d3, d4 = st.columns(4)
-        d1.metric("Current NAV",     f"₹{sel.get('current_nav', 0):.2f}")
-        d2.metric("All-Time High",   f"₹{sel.get('all_time_high', 0):.2f}")
-        d3.metric("From ATH",        pct(sel.get("current_drawdown_pct")))
-        d4.metric("Recovery needed", pct(sel.get("recovery_needed_pct")))
+        d1,d2,d3,d4 = st.columns(4)
+        d1.metric("Current NAV",     f"₹{sel.get('current_nav',0):.2f}")
+        d2.metric("All-Time High",   f"₹{sel.get('all_time_high',0):.2f}")
+        d3.metric("From ATH",        pp(sel.get("current_drawdown_pct")))
+        d4.metric("Recovery Needed", pp(sel.get("recovery_needed_pct")))
 
-        events = sel.get("events", [])
+        events = sel.get("events",[])
         if events:
-            st.subheader("Historical drawdown events")
+            st.markdown("### Historical Drawdown Events")
             ev_rows = []
             for e in events[:8]:
-                sip_b = e.get("sip_benefit", {})
+                sb = e.get("sip_benefit",{})
                 ev_rows.append({
-                    "Peak date":      e.get("peak_date"),
-                    "Trough date":    e.get("trough_date"),
-                    "Drawdown%":      e.get("drawdown_pct"),
-                    "Fall (days)":    e.get("drawdown_days"),
-                    "Recovery (days)":e.get("recovery_days", "Not recovered"),
-                    "Total (days)":   e.get("total_event_days", "—"),
-                    "SIP return%":    sip_b.get("sip_return_pct"),
-                    "Lump return%":   sip_b.get("lump_return_pct"),
-                    "SIP advantage%": sip_b.get("sip_advantage_pct"),
+                    "Peak":         e.get("peak_date"),
+                    "Trough":       e.get("trough_date"),
+                    "DD%":          e.get("drawdown_pct"),
+                    "Fall(d)":      e.get("drawdown_days"),
+                    "Recov(d)":     e.get("recovery_days","Not recovered"),
+                    "SIP ret%":     sb.get("sip_return_pct"),
+                    "LS ret%":      sb.get("lump_return_pct"),
+                    "SIP edge%":    sb.get("sip_advantage_pct"),
                 })
             st.dataframe(pd.DataFrame(ev_rows), use_container_width=True, hide_index=True)
 
 
-# ═══════════════════════════════════════════════════════════════════
-# PAGE 5 — SIP STEP-UP PLANNER (Module 6)
-# ═══════════════════════════════════════════════════════════════════
-elif page == "📈 SIP Step-Up Planner":
-    st.title("SIP Step-Up Planner")
-    st.caption("Drag the sliders — see your 20-year wealth update live")
+# ════════════════════════════════════════════════════════════════════
+# STEP-UP
+# ════════════════════════════════════════════════════════════════════
+elif "STEP-UP" in page:
+    st.markdown("<h1>SIP Step-Up Planner</h1>", unsafe_allow_html=True)
 
-    import plotly.graph_objects as go
+    ctrl, chart = st.columns([1,2], gap="large")
 
-    col_ctrl, col_chart = st.columns([1, 2])
-
-    with col_ctrl:
-        initial_sip    = st.slider("Starting monthly SIP (₹)", 1000, 100000, 10000, 500)
-        stepup_pct     = st.slider("Annual SIP step-up %", 0, 30, 10, 1) / 100
-        expected_cagr  = st.slider("Expected CAGR %", 8, 25, 15, 1) / 100
-        years          = st.slider("Investment horizon (years)", 5, 35, 20, 1)
-        lump_sum       = st.number_input("One-time lump sum (₹)", 0, 10000000, 500000, 50000)
-        inflation      = st.slider("Inflation rate %", 4, 10, 6, 1) / 100
+    with ctrl:
+        initial_sip   = st.slider("Starting SIP (₹/mo)", 1000, 100000, 10000, 500)
+        stepup_pct    = st.slider("Annual step-up %", 0, 30, 10, 1) / 100
+        expected_cagr = st.slider("Expected CAGR %", 8, 25, 15, 1) / 100
+        years         = st.slider("Horizon (years)", 5, 35, 20, 1)
+        lump_sum      = st.number_input("Lump sum (₹)", 0, 10000000, 500000, 50000)
+        inflation     = st.slider("Inflation %", 4, 10, 6, 1) / 100
 
         from stepup import compare_flat_vs_stepup, run_all_goals
-        result = compare_flat_vs_stepup(
-            initial_sip, stepup_pct, expected_cagr, years, lump_sum, inflation
-        )
-
+        result = compare_flat_vs_stepup(initial_sip, stepup_pct, expected_cagr,
+                                         years, lump_sum, inflation)
         flat_f   = result["flat_sip"]
         stepup_f = result["stepup_sip"]
         adv      = result["step_up_advantage"]
 
         st.divider()
-        st.metric("Flat SIP corpus",   fmt_inr(flat_f["final_corpus"]),
-                   f"{flat_f['wealth_multiple']}x")
-        st.metric("Step-up corpus",    fmt_inr(stepup_f["final_corpus"]),
-                   f"+{adv['corpus_boost_pct']}% vs flat", delta_color="normal")
-        st.metric("Extra wealth",      fmt_inr(adv["extra_corpus"]))
-        st.metric("Final monthly SIP", fmt_inr(stepup_f["final_monthly_sip"]))
+        st.metric("Flat SIP corpus",   inr(flat_f["final_corpus"]),
+                   f"{flat_f['wealth_multiple']}x invested")
+        st.metric("Step-up corpus",    inr(stepup_f["final_corpus"]),
+                   f"+{adv['corpus_boost_pct']}% vs flat")
+        st.metric("Extra wealth",      inr(adv["extra_corpus"]))
+        st.metric("Final monthly SIP", inr(stepup_f["final_monthly_sip"]))
 
-    with col_chart:
+    with chart:
         flat_df   = pd.DataFrame(flat_f["yearly"])
         stepup_df = pd.DataFrame(stepup_f["yearly"])
 
         fig = go.Figure()
         fig.add_trace(go.Scatter(
             x=stepup_df["year"], y=stepup_df["corpus"],
-            name="Step-up corpus", line=dict(color="#00C896", width=2.5)
+            name="Step-up", line=dict(color="#00e5ff", width=2.5),
+            fill="tozeroy", fillcolor="rgba(0,229,255,0.04)",
         ))
         fig.add_trace(go.Scatter(
             x=flat_df["year"], y=flat_df["corpus"],
-            name="Flat SIP corpus", line=dict(color="#6B8CFF", width=2, dash="dash")
+            name="Flat SIP", line=dict(color="#7a9bb5", width=1.5, dash="dash"),
         ))
         fig.add_trace(go.Scatter(
             x=stepup_df["year"], y=stepup_df["real_value"],
-            name="Real value (inflation-adj)", line=dict(color="#FF8C42", width=1.5, dash="dot")
+            name="Real (inflation-adj)", line=dict(color="#ffb300", width=1.5, dash="dot"),
         ))
         fig.add_trace(go.Scatter(
             x=stepup_df["year"], y=stepup_df["total_invested"],
-            name="Total invested", fill="tozeroy",
-            fillcolor="rgba(107,140,255,0.08)",
-            line=dict(color="rgba(107,140,255,0.3)", width=1)
+            name="Invested", line=dict(color="#3d5a72", width=1),
+            fill="tozeroy", fillcolor="rgba(61,90,114,0.08)",
         ))
-        fig.update_layout(
-            title="20-Year Wealth Projection",
-            xaxis_title="Years", yaxis_title="₹ Corpus",
-            height=380,
-            legend=dict(orientation="h", yanchor="bottom", y=1.02),
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)",
-            yaxis=dict(tickformat=",.0f"),
-        )
+        fig.update_layout(**PLOTLY, height=360,
+                          legend=dict(orientation="h", y=1.05,
+                                      font=dict(size=9)),
+                          yaxis=dict(tickformat=",.0f", title="₹ Corpus",
+                                     **PLOTLY["yaxis"]),
+                          xaxis=dict(title="Years", **PLOTLY["xaxis"]))
         st.plotly_chart(fig, use_container_width=True)
 
-    st.subheader("Goal-Based Reverse Planning")
-    st.caption("How much SIP do you need to start today to hit these goals?")
-
+    st.markdown("### Goal Planning")
     goals = run_all_goals(expected_cagr, stepup_pct, lump_sum)
     g_rows = []
     for key, g in goals.items():
         p = g["plan"]
         g_rows.append({
-            "Goal":             g["label"],
-            "Target":           fmt_inr(p["target_corpus"]),
-            "Years":            p["years"],
-            "Start SIP (₹/mo)": f"₹{p['required_initial_sip']:,.0f}",
-            "Final SIP (₹/mo)": f"₹{p['final_monthly_sip']:,.0f}",
-            "Total Invested":   fmt_inr(p["total_invested"]),
-            "Projected Corpus": fmt_inr(p["projected_corpus"]),
+            "Goal":           g["label"],
+            "Target":         inr(p["target_corpus"]),
+            "Years":          p["years"],
+            "Start SIP/mo":   f"₹{p['required_initial_sip']:,.0f}",
+            "Final SIP/mo":   f"₹{p['final_monthly_sip']:,.0f}",
+            "Total Invested": inr(p["total_invested"]),
+            "Projected":      inr(p["projected_corpus"]),
         })
     st.dataframe(pd.DataFrame(g_rows), use_container_width=True, hide_index=True)
 
 
-# ═══════════════════════════════════════════════════════════════════
-# PAGE 6 — TAX-ADJUSTED RETURNS (Module 7)
-# ═══════════════════════════════════════════════════════════════════
-elif page == "🧾 Tax-Adjusted Returns":
-    st.title("Tax-Adjusted Returns")
-    st.caption("Post-tax CAGR & XIRR — Resident Individual | LTCG 12.5% · STCG 20% · Cess 4%")
+# ════════════════════════════════════════════════════════════════════
+# TAX
+# ════════════════════════════════════════════════════════════════════
+elif "TAX" in page:
+    st.markdown("<h1>Tax-Adjusted Returns</h1>", unsafe_allow_html=True)
+    st.markdown('<p style="font-family:DM Mono,monospace;font-size:10px;color:#3d5a72;'
+                'text-transform:uppercase;letter-spacing:0.1em;">'
+                'Resident Individual · LTCG 12.5% · STCG 20% · 4% cess · FY 2024-25</p>',
+                unsafe_allow_html=True)
 
-    report = load_json(LATEST_JSON)
+    report = load(LATEST_JSON)
     if not report:
         st.warning("Run pipeline.py first.")
         st.stop()
 
-    with st.expander("📋 Tax rules applied (FY 2024-25)", expanded=False):
+    with st.expander("Tax rules — FY 2024-25"):
         st.markdown("""
 | Type | Holding | Rate | Exemption |
-|------|---------|------|-----------|
-| Equity LTCG | > 12 months | 12.5% + 4% cess | ₹1,25,000/year |
+|---|---|---|---|
+| Equity LTCG | > 12 months | 12.5% + 4% cess | ₹1,25,000/yr |
 | Equity STCG | ≤ 12 months | 20% + 4% cess | None |
-| Debt funds  | Any         | Slab rate (30%) + cess | None |
-| ELSS        | > 36 months | 12.5% + 4% cess | ₹1,25,000/year |
+| Debt | Any | Slab 30% + cess | None |
+| ELSS | > 36 months | 12.5% + 4% cess | ₹1,25,000/yr |
         """)
 
-    st.subheader("Pre-tax vs Post-tax CAGR (5-year)")
     tax_rows = []
     for code, f in report.items():
         if "error" in f: continue
-        pre5  = f.get("cagr", {}).get("5y")
-        pt5   = f.get("post_tax_cagr", {}).get("5y", {})
-        post5 = pt5.get("post_tax_cagr_pct")
-        drag  = pt5.get("tax_drag_pct")
+        pre5 = f.get("cagr",{}).get("5y")
+        pt5  = f.get("post_tax_cagr",{}).get("5y",{})
         tax_rows.append({
-            "Fund":              f.get("fund_name", f.get("scheme_name",""))[:30],
-            "Pre-tax 5Y CAGR%":  pre5,
-            "Post-tax 5Y CAGR%": post5,
-            "Tax drag%":         drag,
-            "Regime":            pt5.get("regime", "")[:35] if pt5 else "",
+            "Fund":           f.get("fund_name", f.get("scheme_name",""))[:28],
+            "Pre-tax 5Y%":    pre5,
+            "Post-tax 5Y%":   pt5.get("post_tax_cagr_pct"),
+            "Tax drag%":      pt5.get("tax_drag_pct"),
+            "Regime":         pt5.get("regime","")[:32] if pt5 else "",
         })
-    df = pd.DataFrame(tax_rows).dropna(subset=["Pre-tax 5Y CAGR%"]).sort_values(
-        "Post-tax 5Y CAGR%", ascending=False
-    )
+    df = pd.DataFrame(tax_rows).dropna(subset=["Pre-tax 5Y%"]).sort_values(
+        "Post-tax 5Y%", ascending=False)
     st.dataframe(df, use_container_width=True, hide_index=True)
 
     st.divider()
-
-    st.subheader("Interactive Tax Calculator")
-    tcol1, tcol2 = st.columns(2)
-    with tcol1:
-        inv_amount   = st.number_input("Invested amount (₹)", 10000, 10000000, 500000, 10000)
-        pre_tax_cagr = st.slider("Pre-tax CAGR %", 5.0, 35.0, 15.0, 0.5)
-        holding_yrs  = st.slider("Holding period (years)", 1, 20, 5)
-        fund_cat     = st.selectbox("Fund category",
-                                     ["Large Cap","Mid Cap","Small Cap","Flexi Cap",
-                                      "ELSS","Index","Debt"])
-    with tcol2:
-        from tax import post_tax_cagr as calc_post_tax
-        result = calc_post_tax(pre_tax_cagr, holding_yrs, inv_amount, fund_cat)
-        if result:
-            st.metric("Gross final value",  fmt_inr(result.get("gross_final_value")))
-            st.metric("Tax amount",         fmt_inr(result.get("tax_amount")))
-            st.metric("Net final value",    fmt_inr(result.get("net_final_value")))
-            st.metric("Post-tax CAGR",      f"{result.get('post_tax_cagr_pct','—')}%",
-                       delta=f"Tax drag: -{result.get('tax_drag_pct','—')}%")
-            st.info(f"**Tax regime:** {result.get('regime','')}")
+    st.markdown("### Interactive Tax Calculator")
+    tc1, tc2 = st.columns(2)
+    with tc1:
+        inv    = st.number_input("Invested (₹)", 10000, 10000000, 500000, 10000)
+        pcagr  = st.slider("Pre-tax CAGR %", 5.0, 35.0, 15.0, 0.5)
+        hyrs   = st.slider("Holding (years)", 1, 20, 5)
+        fcat   = st.selectbox("Category",
+                               ["Large Cap","Mid Cap","Small Cap","Flexi Cap","ELSS","Index","Debt"])
+    with tc2:
+        from tax import post_tax_cagr as ptc
+        res = ptc(pcagr, hyrs, inv, fcat)
+        if res:
+            st.metric("Gross final",   inr(res.get("gross_final_value")))
+            st.metric("Tax owed",      inr(res.get("tax_amount")))
+            st.metric("Net final",     inr(res.get("net_final_value")))
+            st.metric("Post-tax CAGR", f"{res.get('post_tax_cagr_pct','—')}%",
+                       delta=f"Drag: -{res.get('tax_drag_pct','—')}%")
+            st.info(f"Regime: {res.get('regime','')}")
 
     st.divider()
-
-    st.subheader("ELSS vs Regular Equity — Which wins after tax?")
-    ec1, ec2, ec3 = st.columns(3)
-    elss_sip  = ec1.number_input("Monthly SIP (₹)", 1000, 100000, 12500, 500, key="elss_sip")
-    elss_yrs  = ec2.slider("Years", 3, 20, 10, key="elss_yrs")
-    elss_cagr = ec3.slider("Expected CAGR %", 8, 25, 15, key="elss_cagr")
-
+    st.markdown("### ELSS vs Regular Equity")
+    e1,e2,e3 = st.columns(3)
+    esip  = e1.number_input("SIP/mo (₹)", 1000, 100000, 12500, 500, key="etax_sip")
+    eyrs  = e2.slider("Years", 3, 20, 10, key="etax_yrs")
+    ecagr = e3.slider("CAGR %", 8, 25, 15, key="etax_cagr")
     from tax import elss_vs_equity_comparison
-    comp = elss_vs_equity_comparison(elss_sip, elss_yrs, float(elss_cagr))
-
-    r1, r2, r3 = st.columns(3)
-    r1.metric("ELSS net corpus",  fmt_inr(comp["elss"]["net_corpus"]),
-               f"80C saved: {fmt_inr(comp['elss']['80c_tax_saved'])}")
-    r2.metric("Regular equity",   fmt_inr(comp["regular_equity"]["net_corpus"]))
-    r3.metric("ELSS advantage",   fmt_inr(comp["elss_advantage_rs"]),
-               comp["verdict"], delta_color="normal")
-
-
-# ═══════════════════════════════════════════════════════════════════
-# PAGE 7 — MOMENTUM SIGNALS
-# ═══════════════════════════════════════════════════════════════════
-elif page == "⚡ Momentum Signals":
-    st.title("Momentum Signals")
-    st.caption("Multi-factor momentum scoring — 8 factors, 0–100 composite score")
-
-    momentum = load_json(MOMENTUM_JSON)
-    if not momentum:
-        st.info("Run `python momentum.py` to generate momentum scores.")
-        st.stop()
-
-    import plotly.graph_objects as go
-
-    names  = [m.get("scheme_name", "")[:25] for m in momentum]
-    scores = [m.get("composite_score", 0) for m in momentum]
-    colors = ["#00C896" if s >= 60 else "#FFB830" if s >= 40 else "#FF4B4B" for s in scores]
-
-    fig = go.Figure(go.Bar(
-        x=scores, y=names, orientation="h",
-        marker_color=colors,
-        text=[f"{s:.0f}" for s in scores],
-        textposition="outside",
-    ))
-    fig.update_layout(
-        height=max(300, len(names) * 36),
-        xaxis=dict(range=[0, 110], title="Momentum Score"),
-        yaxis=dict(autorange="reversed"),
-        paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(0,0,0,0)",
-        margin=dict(l=0, r=60, t=20, b=20),
-    )
-    st.plotly_chart(fig, use_container_width=True)
-
-    st.divider()
-
-    st.subheader("Factor Breakdown")
-    selected = st.selectbox("Inspect fund", names)
-    sel = next((m for m in momentum if m.get("scheme_name", "")[:25] == selected), {})
-    if sel:
-        fa = sel.get("factors", {})
-        tr = fa.get("trailing_returns", {})
-
-        mc1, mc2, mc3 = st.columns(3)
-        mc1.metric("Composite Score", sel.get("composite_score"))
-        mc2.metric("Signal",          sel.get("signal"))
-        mc3.metric("RSI (14)",        fa.get("rsi_14", "—"))
-
-        st.info(f"**Action:** {sel.get('action', '—')}")
-
-        t1, t2, t3, t4 = st.columns(4)
-        t1.metric("1M return",  pct(tr.get("1m_pct")))
-        t2.metric("3M return",  pct(tr.get("3m_pct")))
-        t3.metric("6M return",  pct(tr.get("6m_pct")))
-        t4.metric("12M return", pct(tr.get("12m_pct")))
-
-        fs = sel.get("factor_scores", {})
-        if fs:
-            categories    = list(fs.keys())
-            values        = [fs[c] * 100 for c in categories]
-            values_closed = values + [values[0]]
-            cats_closed   = categories + [categories[0]]
-
-            fig2 = go.Figure(go.Scatterpolar(
-                r=values_closed, theta=cats_closed,
-                fill="toself",
-                line_color="#00C896",
-                fillcolor="rgba(0,200,150,0.15)",
-            ))
-            fig2.update_layout(
-                polar=dict(radialaxis=dict(visible=True, range=[0, 100])),
-                height=320,
-                paper_bgcolor="rgba(0,0,0,0)",
-                margin=dict(t=20, b=20),
-            )
-            st.plotly_chart(fig2, use_container_width=True)
-
-        trend = fa.get("trend", {})
-        if trend:
-            tc1, tc2, tc3 = st.columns(3)
-            tc1.metric("MA50",  f"₹{trend.get('ma50','—')}")
-            tc2.metric("MA200", f"₹{trend.get('ma200','—')}")
-            tc3.metric("Bullish MA stack",
-                        "✅ Yes" if trend.get("ma_bullish_stack") else "❌ No")
+    comp = elss_vs_equity_comparison(esip, eyrs, float(ecagr))
+    r1,r2,r3 = st.columns(3)
+    r1.metric("ELSS net",    inr(comp["elss"]["net_corpus"]),
+               f"80C saved: {inr(comp['elss']['80c_tax_saved'])}")
+    r2.metric("Regular EQ",  inr(comp["regular_equity"]["net_corpus"]))
+    r3.metric("ELSS edge",   inr(comp["elss_advantage_rs"]), comp["verdict"])
