@@ -251,7 +251,7 @@ if "OVERVIEW" in page:
         df = pd.DataFrame(rows).sort_values("5Y%", ascending=False)
         st.dataframe(df, use_container_width=True, hide_index=True,
                      column_config={
-                        "Score": st.column_config.ProgressColumn("Score", min_value=0, max_value=100),
+                        "Score": st.column_config.ProgressColumn("Score", min_value=0, max_value=100, format="%.0f"),
                         "5Y%":   st.column_config.NumberColumn("5Y%", format="%.1f%%"),
                         "3Y%":   st.column_config.NumberColumn("3Y%", format="%.1f%%"),
                         "1Y%":   st.column_config.NumberColumn("1Y%", format="%.1f%%"),
@@ -259,11 +259,13 @@ if "OVERVIEW" in page:
 
     with right:
         st.markdown("### Category CAGR")
-        cats = ["Large Cap","Mid Cap","Small Cap","Flexi Cap","ELSS","Index"]
+        categories_map = {"Large Cap":"Large Cap", "Mid Cap":"Mid Cap", "Small Cap":"Small Cap", "Flexi Cap":"Flexi", "ELSS":"ELSS", "Index":"Index"}
+        cats = list(categories_map.keys())
         cat_avgs = []
-        for cat in cats:
+        for cat, keyword in categories_map.items():
             vals = [f.get("cagr",{}).get("5y") for f in funds
-                    if f.get("category","") == cat and f.get("cagr",{}).get("5y")]
+                    if (cat == f.get("category","") or keyword in f.get("fund_name", f.get("scheme_name", "")))
+                    and f.get("cagr",{}).get("5y")]
             cat_avgs.append(round(sum(vals)/len(vals),1) if vals else 0)
 
         fig = go.Figure(go.Bar(
@@ -303,10 +305,7 @@ if "OVERVIEW" in page:
             for pt in scatter_pts:
                 fig2.add_trace(go.Scatter(
                     x=[pt["x"]], y=[pt["y"]],
-                    mode="markers+text",
-                    text=[pt["name"]],
-                    textposition="top center",
-                    textfont=dict(size=8, color="#3d5a72"),
+                    mode="markers",
                     marker=dict(size=pt["size"], color="#00e5ff",
                                 line=dict(color="#162338", width=1),
                                 opacity=0.8),
