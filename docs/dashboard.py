@@ -27,10 +27,9 @@ def load_css():
     if css_path.exists():
         with open(css_path) as f:
             raw = f.read()
-        # wrap in <style> if not already
-        if not raw.strip().startswith("<style"):
-            raw = f"<style>{raw}</style>"
-        st.markdown(raw, unsafe_allow_html=True)
+        # Strip any existing <style> / </style> tags to avoid nesting
+        raw = raw.replace("<style>", "").replace("</style>", "").strip()
+        st.markdown(f"<style>{raw}</style>", unsafe_allow_html=True)
 
 load_css()
 
