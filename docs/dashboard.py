@@ -243,7 +243,8 @@ if "OVERVIEW" in page:
         cat_avgs = []
         for cat in cats:
             vals = [f.get("cagr",{}).get("5y") for f in funds
-                    if f.get("category","") == cat and f.get("cagr",{}).get("5y")]
+                    if cat.lower() in f.get("fund_name", f.get("scheme_name", "")).lower() 
+                    and f.get("cagr",{}).get("5y")]
             cat_avgs.append(round(sum(vals)/len(vals),1) if vals else 0)
 
         fig = go.Figure(go.Bar(

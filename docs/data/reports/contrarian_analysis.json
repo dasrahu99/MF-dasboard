@@ -1,0 +1,655 @@
+{
+  "generated_at": "2026-03-21 17:25:44",
+  "market_regime": {
+    "regime": "PULLBACK",
+    "regime_desc": "Market pullback \u2014 Nifty down 5-10%. Good entry for quality funds. RSI below 35 \u2014 PANIC ZONE. Historically the best time to buy.",
+    "opportunity_level": "VERY HIGH",
+    "panic_zone": true,
+    "current_nav": 384.74,
+    "ath": 414.8,
+    "52w_high": 414.8,
+    "pct_from_ath": -7.25,
+    "pct_from_52w_high": -7.25,
+    "ma50": 405.32,
+    "ma200": 400.5,
+    "trend": "BULLISH",
+    "rsi_14": 21.4,
+    "returns": {
+      "1m_pct": -5.94,
+      "3m_pct": -6.04,
+      "6m_pct": -9.47
+    }
+  },
+  "fund_signals": [
+    {
+      "scheme_code": "120586",
+      "scheme_name": "Mirae Asset Large Cap Fund - Growth",
+      "category": "Equity",
+      "contrarian_score": 69.0,
+      "signal": "REVIEW",
+      "action": "Mixed signals. Review fund fundamentals before investing.",
+      "strategy": "Maintain existing SIP only.",
+      "color": "neutral",
+      "priority": 4,
+      "lump_sum_multiplier": 1.8,
+      "lump_sum_advice": "Deploy 1.8x your normal monthly SIP as one-time investment.",
+      "market_regime": "PULLBACK",
+      "opportunity_level": "VERY HIGH",
+      "quality_grade": "STRONG",
+      "quality_score": 73.0,
+      "valuation_zone": "SLIGHTLY EXPENSIVE",
+      "valuation_percentile": 53.0,
+      "pct_from_market_peak": -7.25,
+      "panic_zone": true,
+      "quality_details": {
+        "cagr_consistency": {
+          "points": 25,
+          "max": 25,
+          "3y_pct": 16.5,
+          "5y_pct": 14.46,
+          "10y_pct": 15.13
+        },
+        "sharpe": {
+          "points": 10,
+          "max": 20,
+          "value": 0.86
+        },
+        "drawdown_resilience": {
+          "points": 10,
+          "max": 20,
+          "max_dd_pct": 37.3
+        },
+        "low_market_resilience": {
+          "points": 16,
+          "max": 20,
+          "resilience_pct": 79.1,
+          "down_months_analysed": 43
+        },
+        "recovery_speed": {
+          "points": 12,
+          "max": 15
+        }
+      },
+      "valuation_details": {
+        "percentile": 53.0,
+        "zone": "SLIGHTLY EXPENSIVE",
+        "description": "NAV in upper half of 3Y range \u2014 prefer SIP over lump sum.",
+        "current_nav": 113.6,
+        "3y_nav_min": 71.64,
+        "3y_nav_max": 128.4,
+        "3y_nav_median": 112.6,
+        "fair_value_est": 121.6179,
+        "discount_to_fair_pct": -6.59
+      }
+    },
+    {
+      "scheme_code": "118989",
+      "scheme_name": "HDFC Mid-Cap Opportunities Fund - Growth",
+      "category": "Equity",
+      "contrarian_score": 67.0,
+      "signal": "REVIEW",
+      "action": "Mixed signals. Review fund fundamentals before investing.",
+      "strategy": "Maintain existing SIP only.",
+      "color": "neutral",
+      "priority": 4,
+      "lump_sum_multiplier": 1.8,
+      "lump_sum_advice": "Deploy 1.8x your normal monthly SIP as one-time investment.",
+      "market_regime": "PULLBACK",
+      "opportunity_level": "VERY HIGH",
+      "quality_grade": "STRONG",
+      "quality_score": 72.0,
+      "valuation_zone": "SLIGHTLY EXPENSIVE",
+      "valuation_percentile": 61.4,
+      "pct_from_market_peak": -7.25,
+      "panic_zone": true,
+      "quality_details": {
+        "cagr_consistency": {
+          "points": 25,
+          "max": 25,
+          "3y_pct": 24.26,
+          "5y_pct": 21.42,
+          "10y_pct": 18.99
+        },
+        "sharpe": {
+          "points": 15,
+          "max": 20,
+          "value": 1.193
+        },
+        "drawdown_resilience": {
+          "points": 10,
+          "max": 20,
+          "max_dd_pct": 39.5
+        },
+        "low_market_resilience": {
+          "points": 14,
+          "max": 20,
+          "resilience_pct": 71.4,
+          "down_months_analysed": 42
+        },
+        "recovery_speed": {
+          "points": 8,
+          "max": 15
+        }
+      },
+      "valuation_details": {
+        "percentile": 61.4,
+        "zone": "SLIGHTLY EXPENSIVE",
+        "description": "NAV in upper half of 3Y range \u2014 prefer SIP over lump sum.",
+        "current_nav": 204.935,
+        "3y_nav_min": 105.536,
+        "3y_nav_max": 227.177,
+        "3y_nav_median": 195.602,
+        "fair_value_est": 213.6685,
+        "discount_to_fair_pct": -4.09
+      }
+    },
+    {
+      "scheme_code": "118778",
+      "scheme_name": "Nippon India Small Cap Fund - Growth",
+      "category": "Equity",
+      "contrarian_score": 66.0,
+      "signal": "CONTRARIAN BUY",
+      "action": "Market down + fund strong + valuation attractive. Ideal lump sum entry.",
+      "strategy": "Deploy 2-3x your normal monthly SIP as lump sum. Continue regular SIP.",
+      "color": "cyan",
+      "priority": 1,
+      "lump_sum_multiplier": 1.8,
+      "lump_sum_advice": "Deploy 1.8x your normal monthly SIP as one-time investment.",
+      "market_regime": "PULLBACK",
+      "opportunity_level": "VERY HIGH",
+      "quality_grade": "STRONG",
+      "quality_score": 61.0,
+      "valuation_zone": "FAIR VALUE",
+      "valuation_percentile": 44.6,
+      "pct_from_market_peak": -7.25,
+      "panic_zone": true,
+      "quality_details": {
+        "cagr_consistency": {
+          "points": 25,
+          "max": 25,
+          "3y_pct": 20.13,
+          "5y_pct": 22.11,
+          "10y_pct": 21.62
+        },
+        "sharpe": {
+          "points": 10,
+          "max": 20,
+          "value": 0.875
+        },
+        "drawdown_resilience": {
+          "points": 5,
+          "max": 20,
+          "max_dd_pct": 48.6
+        },
+        "low_market_resilience": {
+          "points": 13,
+          "max": 20,
+          "resilience_pct": 66.7,
+          "down_months_analysed": 51
+        },
+        "recovery_speed": {
+          "points": 8,
+          "max": 15
+        }
+      },
+      "valuation_details": {
+        "percentile": 44.6,
+        "zone": "FAIR VALUE",
+        "description": "NAV near 3Y median \u2014 reasonable entry.",
+        "current_nav": 171.0992,
+        "3y_nav_min": 97.2487,
+        "3y_nav_max": 204.3979,
+        "3y_nav_median": 176.3791,
+        "fair_value_est": 184.7129,
+        "discount_to_fair_pct": -7.37
+      }
+    },
+    {
+      "scheme_code": "122639",
+      "scheme_name": "Parag Parikh Flexi Cap Fund - Growth",
+      "category": "Equity",
+      "contrarian_score": 66.0,
+      "signal": "REVIEW",
+      "action": "Mixed signals. Review fund fundamentals before investing.",
+      "strategy": "Maintain existing SIP only.",
+      "color": "neutral",
+      "priority": 4,
+      "lump_sum_multiplier": 1.8,
+      "lump_sum_advice": "Deploy 1.8x your normal monthly SIP as one-time investment.",
+      "market_regime": "PULLBACK",
+      "opportunity_level": "VERY HIGH",
+      "quality_grade": "STRONG",
+      "quality_score": 74.0,
+      "valuation_zone": "SLIGHTLY EXPENSIVE",
+      "valuation_percentile": 66.8,
+      "pct_from_market_peak": -7.25,
+      "panic_zone": true,
+      "quality_details": {
+        "cagr_consistency": {
+          "points": 25,
+          "max": 25,
+          "3y_pct": 18.61,
+          "5y_pct": 16.89,
+          "10y_pct": 18.11
+        },
+        "sharpe": {
+          "points": 15,
+          "max": 20,
+          "value": 1.223
+        },
+        "drawdown_resilience": {
+          "points": 10,
+          "max": 20,
+          "max_dd_pct": 31.2
+        },
+        "low_market_resilience": {
+          "points": 16,
+          "max": 20,
+          "resilience_pct": 78.1,
+          "down_months_analysed": 32
+        },
+        "recovery_speed": {
+          "points": 8,
+          "max": 15
+        }
+      },
+      "valuation_details": {
+        "percentile": 66.8,
+        "zone": "SLIGHTLY EXPENSIVE",
+        "description": "NAV in upper half of 3Y range \u2014 prefer SIP over lump sum.",
+        "current_nav": 87.7908,
+        "3y_nav_min": 52.2485,
+        "3y_nav_max": 95.7732,
+        "3y_nav_median": 85.0089,
+        "fair_value_est": 91.9058,
+        "discount_to_fair_pct": -4.48
+      }
+    },
+    {
+      "scheme_code": "120505",
+      "scheme_name": "Axis Long Term Equity (ELSS) - Growth",
+      "category": "Equity",
+      "contrarian_score": 61.0,
+      "signal": "AVOID",
+      "action": "Market down AND fund weak AND not cheap. High risk, low reward.",
+      "strategy": "Pause SIP top-ups. Redirect capital to stronger funds.",
+      "color": "red",
+      "priority": 4,
+      "lump_sum_multiplier": 1.8,
+      "lump_sum_advice": "Deploy 1.8x your normal monthly SIP as one-time investment.",
+      "market_regime": "PULLBACK",
+      "opportunity_level": "VERY HIGH",
+      "quality_grade": "AVERAGE",
+      "quality_score": 52.0,
+      "valuation_zone": "SLIGHTLY EXPENSIVE",
+      "valuation_percentile": 52.6,
+      "pct_from_market_peak": -7.25,
+      "panic_zone": true,
+      "quality_details": {
+        "cagr_consistency": {
+          "points": 25,
+          "max": 25,
+          "3y_pct": 19.88,
+          "5y_pct": 15.63,
+          "10y_pct": 18.08
+        },
+        "sharpe": {
+          "points": 10,
+          "max": 20,
+          "value": 0.939
+        },
+        "drawdown_resilience": {
+          "points": 0,
+          "max": 20,
+          "max_dd_pct": 100.0
+        },
+        "low_market_resilience": {
+          "points": 13,
+          "max": 20,
+          "resilience_pct": 66.7,
+          "down_months_analysed": 45
+        },
+        "recovery_speed": {
+          "points": 4,
+          "max": 15
+        }
+      },
+      "valuation_details": {
+        "percentile": 52.6,
+        "zone": "SLIGHTLY EXPENSIVE",
+        "description": "NAV in upper half of 3Y range \u2014 prefer SIP over lump sum.",
+        "current_nav": 123.76,
+        "3y_nav_min": 71.22,
+        "3y_nav_max": 135.68,
+        "3y_nav_median": 120.93,
+        "fair_value_est": 129.5479,
+        "discount_to_fair_pct": -4.47
+      }
+    },
+    {
+      "scheme_code": "100356",
+      "scheme_name": "UTI Nifty 50 Index Fund - Growth",
+      "category": "Equity",
+      "contrarian_score": 61.0,
+      "signal": "REVIEW",
+      "action": "Mixed signals. Review fund fundamentals before investing.",
+      "strategy": "Maintain existing SIP only.",
+      "color": "neutral",
+      "priority": 4,
+      "lump_sum_multiplier": 1.3,
+      "lump_sum_advice": "Deploy 1.3x your normal monthly SIP as one-time investment.",
+      "market_regime": "PULLBACK",
+      "opportunity_level": "VERY HIGH",
+      "quality_grade": "STRONG",
+      "quality_score": 64.0,
+      "valuation_zone": "SLIGHTLY EXPENSIVE",
+      "valuation_percentile": 71.1,
+      "pct_from_market_peak": -7.25,
+      "panic_zone": true,
+      "quality_details": {
+        "cagr_consistency": {
+          "points": 25,
+          "max": 25,
+          "3y_pct": 17.69,
+          "5y_pct": 17.58,
+          "10y_pct": 15.83
+        },
+        "sharpe": {
+          "points": 15,
+          "max": 20,
+          "value": 1.174
+        },
+        "drawdown_resilience": {
+          "points": 0,
+          "max": 20,
+          "max_dd_pct": 51.7
+        },
+        "low_market_resilience": {
+          "points": 16,
+          "max": 20,
+          "resilience_pct": 79.7,
+          "down_months_analysed": 64
+        },
+        "recovery_speed": {
+          "points": 8,
+          "max": 15
+        }
+      },
+      "valuation_details": {
+        "percentile": 71.1,
+        "zone": "SLIGHTLY EXPENSIVE",
+        "description": "NAV in upper half of 3Y range \u2014 prefer SIP over lump sum.",
+        "current_nav": 384.74,
+        "3y_nav_min": 234.54,
+        "3y_nav_max": 414.8,
+        "3y_nav_median": 362.435,
+        "fair_value_est": 396.0336,
+        "discount_to_fair_pct": -2.85
+      }
+    },
+    {
+      "scheme_code": "119598",
+      "scheme_name": "SBI Bluechip Fund - Growth",
+      "category": "Equity",
+      "contrarian_score": 59.0,
+      "signal": "AVOID",
+      "action": "Market down AND fund weak AND not cheap. High risk, low reward.",
+      "strategy": "Pause SIP top-ups. Redirect capital to stronger funds.",
+      "color": "red",
+      "priority": 4,
+      "lump_sum_multiplier": 1.8,
+      "lump_sum_advice": "Deploy 1.8x your normal monthly SIP as one-time investment.",
+      "market_regime": "PULLBACK",
+      "opportunity_level": "VERY HIGH",
+      "quality_grade": "AVERAGE",
+      "quality_score": 47.0,
+      "valuation_zone": "SLIGHTLY EXPENSIVE",
+      "valuation_percentile": 51.3,
+      "pct_from_market_peak": -7.25,
+      "panic_zone": true,
+      "quality_details": {
+        "cagr_consistency": {
+          "points": 8,
+          "max": 25,
+          "3y_pct": 13.34,
+          "5y_pct": 11.62,
+          "10y_pct": 13.21
+        },
+        "sharpe": {
+          "points": 5,
+          "max": 20,
+          "value": 0.618
+        },
+        "drawdown_resilience": {
+          "points": 10,
+          "max": 20,
+          "max_dd_pct": 37.1
+        },
+        "low_market_resilience": {
+          "points": 16,
+          "max": 20,
+          "resilience_pct": 78.3,
+          "down_months_analysed": 46
+        },
+        "recovery_speed": {
+          "points": 8,
+          "max": 15
+        }
+      },
+      "valuation_details": {
+        "percentile": 51.3,
+        "zone": "SLIGHTLY EXPENSIVE",
+        "description": "NAV in upper half of 3Y range \u2014 prefer SIP over lump sum.",
+        "current_nav": 96.4021,
+        "3y_nav_min": 65.9713,
+        "3y_nav_max": 108.2085,
+        "3y_nav_median": 95.925,
+        "fair_value_est": 102.7028,
+        "discount_to_fair_pct": -6.13
+      }
+    },
+    {
+      "scheme_code": "120503",
+      "scheme_name": "Quant Small Cap Fund - Growth",
+      "category": "Equity",
+      "contrarian_score": 56.0,
+      "signal": "WAIT FOR BOTTOM",
+      "action": "Market down and fund quality is weak. Cheap for a reason \u2014 wait for stabilisation.",
+      "strategy": "Maintain existing SIP only. Watch for quality improvement signals.",
+      "color": "amber",
+      "priority": 3,
+      "lump_sum_multiplier": 0.9,
+      "lump_sum_advice": "Stick to regular SIP only.",
+      "market_regime": "PULLBACK",
+      "opportunity_level": "VERY HIGH",
+      "quality_grade": "WEAK",
+      "quality_score": 35.0,
+      "valuation_zone": "FAIR VALUE",
+      "valuation_percentile": 44.7,
+      "pct_from_market_peak": -7.25,
+      "panic_zone": true,
+      "quality_details": {
+        "cagr_consistency": {
+          "points": 8,
+          "max": 25,
+          "3y_pct": 14.51,
+          "5y_pct": 8.33,
+          "10y_pct": 12.87
+        },
+        "sharpe": {
+          "points": 5,
+          "max": 20,
+          "value": 0.661
+        },
+        "drawdown_resilience": {
+          "points": 0,
+          "max": 20,
+          "max_dd_pct": 100.0
+        },
+        "low_market_resilience": {
+          "points": 14,
+          "max": 20,
+          "resilience_pct": 71.7,
+          "down_months_analysed": 46
+        },
+        "recovery_speed": {
+          "points": 8,
+          "max": 15
+        }
+      },
+      "valuation_details": {
+        "percentile": 44.7,
+        "zone": "FAIR VALUE",
+        "description": "NAV near 3Y median \u2014 reasonable entry.",
+        "current_nav": 99.6142,
+        "3y_nav_min": 65.9999,
+        "3y_nav_max": 113.6849,
+        "3y_nav_median": 102.2506,
+        "fair_value_est": 108.1527,
+        "discount_to_fair_pct": -7.89
+      }
+    },
+    {
+      "scheme_code": "118701",
+      "scheme_name": "ICICI Pru Bluechip Fund - Growth",
+      "category": "Equity",
+      "contrarian_score": 43.0,
+      "signal": "AVOID",
+      "action": "Market down AND fund weak AND not cheap. High risk, low reward.",
+      "strategy": "Pause SIP top-ups. Redirect capital to stronger funds.",
+      "color": "red",
+      "priority": 4,
+      "lump_sum_multiplier": 0.6,
+      "lump_sum_advice": "Stick to regular SIP only.",
+      "market_regime": "PULLBACK",
+      "opportunity_level": "VERY HIGH",
+      "quality_grade": "WEAK",
+      "quality_score": 38.0,
+      "valuation_zone": "EXPENSIVE",
+      "valuation_percentile": 99.9,
+      "pct_from_market_peak": -7.25,
+      "panic_zone": true,
+      "quality_details": {
+        "cagr_consistency": {
+          "points": 0,
+          "max": 25,
+          "3y_pct": 7.0,
+          "5y_pct": 6.01,
+          "10y_pct": 6.21
+        },
+        "sharpe": {
+          "points": 0,
+          "max": 20,
+          "value": -5.839
+        },
+        "drawdown_resilience": {
+          "points": 20,
+          "max": 20,
+          "max_dd_pct": 0.2
+        },
+        "low_market_resilience": {
+          "points": 10,
+          "max": 20,
+          "note": "Insufficient data"
+        },
+        "recovery_speed": {
+          "points": 8,
+          "max": 15
+        }
+      },
+      "valuation_details": {
+        "percentile": 99.9,
+        "zone": "EXPENSIVE",
+        "description": "NAV in top 25% of 3Y range \u2014 wait for pullback.",
+        "current_nav": 6731.9538,
+        "3y_nav_min": 5495.3047,
+        "3y_nav_max": 6731.9538,
+        "3y_nav_median": 6114.2853,
+        "fair_value_est": 6536.4932,
+        "discount_to_fair_pct": 2.99
+      }
+    },
+    {
+      "scheme_code": "119270",
+      "scheme_name": "Kotak Emerging Equity Fund - Growth",
+      "category": "Equity",
+      "contrarian_score": 37.0,
+      "signal": "AVOID",
+      "action": "Market down AND fund weak AND not cheap. High risk, low reward.",
+      "strategy": "Pause SIP top-ups. Redirect capital to stronger funds.",
+      "color": "red",
+      "priority": 4,
+      "lump_sum_multiplier": 0.6,
+      "lump_sum_advice": "Stick to regular SIP only.",
+      "market_regime": "PULLBACK",
+      "opportunity_level": "VERY HIGH",
+      "quality_grade": "POOR",
+      "quality_score": 18.0,
+      "valuation_zone": "EXPENSIVE",
+      "valuation_percentile": 91.3,
+      "pct_from_market_peak": -7.25,
+      "panic_zone": true,
+      "quality_details": {
+        "cagr_consistency": {
+          "points": 0,
+          "max": 25,
+          "3y_pct": null,
+          "5y_pct": null,
+          "10y_pct": null
+        },
+        "sharpe": {
+          "points": 0,
+          "max": 20,
+          "value": NaN
+        },
+        "drawdown_resilience": {
+          "points": 0,
+          "max": 20,
+          "max_dd_pct": NaN
+        },
+        "low_market_resilience": {
+          "points": 10,
+          "max": 20,
+          "note": "Insufficient data"
+        },
+        "recovery_speed": {
+          "points": 8,
+          "max": 15
+        }
+      },
+      "valuation_details": {
+        "percentile": 91.3,
+        "zone": "EXPENSIVE",
+        "description": "NAV in top 25% of 3Y range \u2014 wait for pullback.",
+        "current_nav": 18.0306,
+        "3y_nav_min": 0.0,
+        "3y_nav_max": 18.6547,
+        "3y_nav_median": 15.4193,
+        "fair_value_est": 17.1628,
+        "discount_to_fair_pct": 5.06
+      }
+    }
+  ],
+  "deployment_strategy": {
+    "market_assessment": "PULLBACK \u2014 Good entry. Focus on top-quality funds only.",
+    "regime": "PULLBACK",
+    "panic_zone": true,
+    "strategy_type": "CONTRARIAN DEPLOYMENT",
+    "monthly_sip": 10000,
+    "total_deploy": 18000,
+    "deploy_multiplier": 1.8,
+    "allocations": [
+      {
+        "fund": "Nippon India Small Cap Fund - Growth",
+        "signal": "CONTRARIAN BUY",
+        "contrarian_score": 66.0,
+        "quality_grade": "STRONG",
+        "valuation_zone": "FAIR VALUE",
+        "allocation_pct": 100.0,
+        "deploy_amount": 18000,
+        "strategy": "Deploy 2-3x your normal monthly SIP as lump sum. Continue regular SIP."
+      }
+    ],
+    "historical_note": "Historically, deploying 2-3x SIP during Nifty corrections of 10%+ has generated 25-40% returns within 18 months (2020 COVID crash, 2022 rate hike selloff, 2018 IL&FS crisis)."
+  }
+}
