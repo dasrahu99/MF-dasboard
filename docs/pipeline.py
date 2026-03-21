@@ -48,23 +48,78 @@ log = logging.getLogger(__name__)
 REPORTS_DIR = Path("data/reports")
 REPORTS_DIR.mkdir(parents=True, exist_ok=True)
 
-# ── Watchlist: add your funds here (scheme codes from mfapi.in/mf) ─────────────
-WATCHLIST = {
-    "120503": "Quant Small Cap Fund - Growth",
-    "118778": "Nippon India Small Cap Fund - Growth",
-    "118989": "HDFC Mid-Cap Opportunities Fund - Growth",
-    "122639": "Parag Parikh Flexi Cap Fund - Growth",
-    "120586": "Mirae Asset Large Cap Fund - Growth",
-    "119598": "SBI Bluechip Fund - Growth",
-    "120505": "Axis Long Term Equity (ELSS) - Growth",
-    "100356": "UTI Nifty 50 Index Fund - Growth",
-    "118701": "ICICI Pru Bluechip Fund - Growth",
-    "119270": "Kotak Emerging Equity Fund - Growth",
-}
-
-# ── SIP / lump-sum config (edit to match your goals) ─────────────────────────
+# ── Config ─────────────────────────────────────────────────────────────────────
 SIP_AMOUNT   = 10_000     # ₹ monthly SIP per fund
 LUMP_SUM     = 1_00_000   # ₹ lump sum reference amount
+MAX_FUNDS    = 200        # safety cap — increase if you want even more coverage
+
+# Keywords that indicate NON-equity or unwanted schemes (case-insensitive)
+EXCLUDE_KEYWORDS = [
+    "direct", "dividend", "idcw", "bonus", "institutional", "segregated",
+    "liquid", "overnight", "money market", "gilt", "bond", "debt",
+    "fixed", "float", "income", "credit risk", "banking & psu",
+    "corporate bond", "fund of fund", "fof", "interval", "maturity",
+    "savings", "ultra short", "low duration", "short duration",
+    "medium duration", "long duration", "dynamic bond", "arbitrage",
+    "children", "retirement", "target maturity", "treasury",
+    "mmf", "g-sec", "gsec", "hybrid", "balanced", "conservative",
+    "aggressive hybrid", "equity savings", "discontinued",
+    "nifty 1d rate", "crisil", "constant", "banking and psu",
+]
+
+# Equity-related keywords — fund name must match at least one
+EQUITY_KEYWORDS = [
+    "large cap", "largecap", "mid cap", "midcap", "small cap", "smallcap",
+    "flexi cap", "flexicap", "multi cap", "multicap", "large & mid",
+    "elss", "tax saver", "equity", "value", "contra", "focused",
+    "index", "nifty", "sensex", "opportunities", "bluechip",
+    "emerging", "growth fund", "thematic", "sector", "infra",
+    "pharma", "banking", "technology", "digital", "consumption",
+    "manufacturing", "innovation", "esg", "quant", "momentum",
+    "dividend yield",
+]
+
+
+def discover_equity_funds(nav_df: pd.DataFrame) -> dict:
+    """
+    Auto-discover open-ended equity growth (regular plan) mutual funds
+    from today's bulk AMFI NAV download.
+
+    Returns: dict of {scheme_code: scheme_name}
+    """
+    if nav_df.empty:
+        log.warning("Empty NAV DataFrame — cannot discover funds")
+        return {}
+
+    df = nav_df.copy()
+    df["name_lower"] = df["scheme_name"].str.lower()
+
+    # Must contain "growth" (eliminates dividend/IDCW variants)
+    df = df[df["name_lower"].str.contains("growth", na=False)]
+
+    # Exclude unwanted keywords
+    for kw in EXCLUDE_KEYWORDS:
+        df = df[~df["name_lower"].str.contains(kw, na=False)]
+
+    # Must match at least one equity-related keyword
+    equity_mask = df["name_lower"].apply(
+        lambda n: any(ek in n for ek in EQUITY_KEYWORDS)
+    )
+    df = df[equity_mask]
+
+    # De-duplicate by scheme_code (take first occurrence)
+    df = df.drop_duplicates(subset="scheme_code", keep="first")
+
+    # Sort by NAV descending (higher NAV = older = more established fund)
+    df = df.sort_values("nav", ascending=False)
+
+    # Apply safety cap
+    df = df.head(MAX_FUNDS)
+
+    watchlist = dict(zip(df["scheme_code"].astype(str), df["scheme_name"]))
+    log.info("Auto-discovered %d equity growth funds from %d total AMFI schemes",
+             len(watchlist), len(nav_df))
+    return watchlist
 
 
 def run_daily_pipeline():
@@ -75,6 +130,7 @@ def run_daily_pipeline():
     conn = init_db(DB_PATH)
 
     # 1. Fetch today's bulk NAV
+    nav_df = pd.DataFrame()
     try:
         nav_df = fetch_todays_nav()
         saved  = save_nav_to_db(nav_df, conn)
@@ -82,23 +138,33 @@ def run_daily_pipeline():
     except Exception as e:
         log.error("Bulk NAV fetch failed: %s", e)
 
-    # 2. Ensure historical data exists for watchlist funds
+    # 2. Auto-discover equity growth funds (replaces hardcoded WATCHLIST)
+    WATCHLIST = discover_equity_funds(nav_df)
+    if not WATCHLIST:
+        log.error("No funds discovered — aborting pipeline")
+        conn.close()
+        return
+    log.info("Processing %d funds...", len(WATCHLIST))
+
+    # 3. Fetch history & compute reports for each fund
     all_reports = {}
-    for code, name in WATCHLIST.items():
-        log.info("Processing: %s [%s]", name, code)
+    for i, (code, name) in enumerate(WATCHLIST.items(), 1):
+        log.info("[%d/%d] Processing: %s [%s]", i, len(WATCHLIST), name[:40], code)
         try:
             # Check if we have history; if not, fetch it
             hist = get_nav_history(code, conn, from_date="2015-01-01")
             if len(hist) < 100:
-                log.info("Fetching full history for %s...", code)
+                log.info("  ↳ Fetching full history from mfapi.in...")
                 hist = fetch_historical_nav(code, conn)
                 if hist.empty:
-                    log.warning("No history found for %s", code)
+                    log.warning("  ↳ No history found — skipping")
                     continue
+                # Rate-limit mfapi.in calls (0.3s between requests)
+                time.sleep(0.3)
             else:
-                log.info("Using %d cached records for %s", len(hist), code)
+                log.info("  ↳ Using %d cached records", len(hist))
 
-            # 3. Compute full report
+            # 4. Compute full report
             report = fund_report(
                 scheme_code=code,
                 df=hist,
@@ -109,7 +175,7 @@ def run_daily_pipeline():
             all_reports[code] = report
 
         except Exception as e:
-            log.error("Failed to process %s: %s", code, e)
+            log.error("  ↳ Failed: %s", e)
             continue
 
     # 4. Save JSON report
