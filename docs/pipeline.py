@@ -265,7 +265,7 @@ def run_daily_pipeline():
     # Step 8 — Portfolio report
     log.info("Running portfolio simulation...")
     try:
-        build_portfolio_report(conn=conn)
+        build_portfolio_report(WATCHLIST, conn=conn)
     except Exception as e:
         log.error("Portfolio report failed: %s", e)
 
