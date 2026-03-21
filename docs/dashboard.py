@@ -23,7 +23,7 @@ st.set_page_config(
 
 # ── Inject theme ──────────────────────────────────────────────────
 def load_css():
-    css_path = Path("theme.css")
+    css_path = Path(__file__).parent / "theme.css"
     if css_path.exists():
         with open(css_path) as f:
             raw = f.read()
@@ -48,7 +48,7 @@ PLOTLY = dict(
 )
 
 # ── Paths ─────────────────────────────────────────────────────────
-REPORTS = Path("data/reports")
+REPORTS = Path(__file__).parent / "data" / "reports"
 LATEST_JSON   = REPORTS / "latest.json"
 MOMENTUM_JSON = REPORTS / "momentum_scores.json"
 BENCH_JSON    = REPORTS / "benchmark_analysis.json"
