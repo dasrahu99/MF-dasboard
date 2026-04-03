@@ -868,8 +868,9 @@ elif "CONTRARIAN" in page:
     CONTRARIAN_JSON = REPORTS / "contrarian_analysis.json"
     report = load(TOP10_JSON)
     valid_codes = set(report.keys()) if report else set()
-    contrarian_full = load(CONTRARIAN_JSON)
-    contrarian = {k: v for k, v in (contrarian_full or {}).items() if k in valid_codes}
+    contrarian = load(CONTRARIAN_JSON) or {}
+    if "fund_signals" in contrarian:
+        contrarian["fund_signals"] = [f for f in contrarian["fund_signals"] if f.get("scheme_code") in valid_codes]
 
     st.markdown("<h1>Contrarian Intelligence</h1>", unsafe_allow_html=True)
     st.markdown(
