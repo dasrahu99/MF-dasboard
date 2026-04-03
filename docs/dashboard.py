@@ -343,10 +343,10 @@ if "OVERVIEW" in page:
                     st.markdown('<div style="height:8px"></div>', unsafe_allow_html=True)
 
                     c1,c2 = st.columns(2)
-                    c1.metric("Score",    f"{score:.0f} / 100")
-                    c2.metric("To BUY",   f"{gap:.1f} pts", delta="need ≥60", delta_color="off")
+                    c1.metric("Current Score", f"{score:.0f}")
+                    c2.metric("Points to 60",  f"+{gap:.1f}")
 
-                    st.progress(prog, text=f"{'█'*int(prog*10)}{'░'*(10-int(prog*10))}  {score:.0f}→60")
+                    st.progress(prog)
 
                     t1,t2 = st.columns(2)
                     r1m = tr.get("1m_pct")
