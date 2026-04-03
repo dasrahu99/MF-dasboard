@@ -985,9 +985,13 @@ elif "CONTRARIAN" in page:
                         )
                         st.metric("Deploy",   f"₹{a['deploy_amount']:,.0f}")
                         st.metric("Alloc%",   f"{a['allocation_pct']:.0f}%")
-                        st.caption(f"Quality: {a['quality_grade']}")
-                        st.caption(f"Val: {a['valuation_zone']}")
-                        st.caption(a["strategy"][:80])
+                        st.markdown(f"""
+                        <div style="color:#e8f4f8;font-size:11px;line-height:1.5;margin-top:8px;">
+                          <div style="color:#7a9bb5;">Q-GRADE: <span style="color:#e8f4f8">{a['quality_grade']}</span></div>
+                          <div style="color:#7a9bb5;">VAL ZONE: <span style="color:#e8f4f8">{a['valuation_zone']}</span></div>
+                          <div style="color:#9baec2;margin-top:6px;font-style:italic;">{a['strategy'][:100]}</div>
+                        </div>
+                        """, unsafe_allow_html=True)
     else:
         st.info(deploy.get("market_assessment",""))
 
@@ -1010,7 +1014,7 @@ elif "CONTRARIAN" in page:
     df = pd.DataFrame(sig_rows)
     st.dataframe(df, use_container_width=True, hide_index=True,
                  column_config={
-                    "Score": st.column_config.ProgressColumn("Score", min_value=0, max_value=100),
+                    "Score": st.column_config.ProgressColumn("Score", min_value=0, max_value=100, format="%.0f"),
                     "Val %ile": st.column_config.NumberColumn("Val %ile", format="%.0f"),
                  })
 
